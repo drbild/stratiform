@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='stratiform',
-    version='0.0.0',
+    version='0.1.0-SNAPSHOT',
     author = "David R. Bild",
     author_email = "david@davidbild.org",
     description="Concise creation of AWS CloudFormation templates.",

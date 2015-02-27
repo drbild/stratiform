@@ -1,0 +1,77 @@
+# Copyright 2015 David R. Bild
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+from collections import OrderedDict as odict
+
+from copy import copy
+from stratiform.copyutils import super_copy
+
+from stratiform.common import AWSObject, NameableAWSObject
+from stratiform.common import class_name
+from stratiform.common import required_prop as req_prop
+
+def merge(*seqs):
+    return [item for seq in seqs for item in seq]
+
+def siblings(obj):
+    return obj.__siblings__()
+
+class Resource(NameableAWSObject):
+    def __init__(self, *args, **kwargs):
+        super(Resource, self).__init__(*args, **kwargs)
+        self.siblings = []
+
+    def __copy__(self):
+        result = super_copy(Resource, self)
+        result.siblings = copy(result.siblings)
+        return result
+
+    def __siblings__(self):
+        return self.siblings
+
+    def __json__(self):
+        return odict([
+            ('Type', self.resource_type),
+            ('Properties', super(Resource, self).__json__())
+        ])
+
+class Tag(AWSObject):
+    props = [req_prop('Key'),
+             req_prop('Value')]
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "Tag<Key:'%s', Value:'%s'>"%(self.key, self.value)
+
+class Tags(object):
+    def __init__(self, *tags, **kwtags):
+        kwtags = [Tag(k,v) for k, v in kwtags.iteritems()]
+        self.tags = merge(tags, kwtags)
+
+    def __add__(self, rhs):
+        if rhs is None:
+            return self
+        if not isinstance(rhs, Tags):
+            raise TypeError("cannot merge 'Tags' and '%s' objects"%class_name(rhs))
+        return Tags(*(self.tags + rhs.tags))
+
+    def __json__(self):
+        return self.tags
+
+#### Public API ####
+tag = tags = Tags
+
+__all__ = ['tag', 'tags']

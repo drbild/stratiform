@@ -12,6 +12,15 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from common import NameableAWSObject
+from common import required_prop as req_prop, optional_prop as opt_prop
 
-__version_info__ = ('0', '1', '0-SNAPSHOT')
-__version__ = '.'.join(__version_info__)
+class Output(NameableAWSObject):
+    props = [req_prop('Value'),
+             opt_prop('Description'),
+             opt_prop('Condition')]
+
+#### Public API ####
+output = Output
+
+__all__ = ['output']

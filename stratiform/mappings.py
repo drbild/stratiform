@@ -12,16 +12,26 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from stratiform.dispatchers import typed_dispatch
 
-__version_info__ = ('0', '1', '0-SNAPSHOT')
-__version__ = '.'.join(__version_info__)
+class Mapping(object):
+    @typed_dispatch
+    def __init__(self, name, mapping):
+        self.name    = name
+        self.mapping = mapping
 
-from stratiform.base import ref
-from stratiform.common import *
+    @staticmethod
+    def arg_names():
+        return ('name', 'mapping')
 
-from stratiform.templates import *
-from stratiform.parameters import *
-from stratiform.conditions import *
-from stratiform.mappings import *
-from stratiform.resources import *
-from stratiform.outputs import *
+    @staticmethod
+    def arg_types():
+        return (basestring, dict)
+
+    def __json__(self):
+        return {self.name : self.mapping}
+
+#### Public API ####
+mapping = Mapping
+
+__all__ = ['mapping']

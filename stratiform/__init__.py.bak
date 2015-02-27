@@ -1,0 +1,86 @@
+# Copyright 2015 David R. Bild
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
+from collections import OrderedDict as odict
+
+__version__ = "0.1.0-SNAPSHOT"
+
+class StratiformEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, '__json__'):
+            return obj.__json__()
+        return json.JSONEncoder.default(self, obj)
+
+def to_json(obj):
+    return json.dumps(obj, cls=StratiformEncoder, indent=4, separators=(',', ': '))
+
+class AWSObject(object):
+    pass
+
+class TitledAWSObject(AWSObject):
+
+    def __init__(self, title):
+        self.title = title
+
+class PseudoParameter(TitledAWSObject):
+    pass
+
+ACCOUNT_ID        = PseudoParameter('AWS::AccountId')
+NOTIFICATION_ARNS = PseudoParameter('AWS::NotificationARNs')
+NO_VALUE          = PseudoParameter('AWS::NoValue')
+REGION            = PseudoParameter('AWS::Region')
+STACK_ID          = PseudoParameter('AWS::StackId')
+STACK_NAME        = PseudoParameter('AWS::StackName')
+
+class Ref(AWSObject):
+    def __init__(self, obj):
+        self.ref = odict([
+            ('Ref', obj.title)
+        ])
+
+    def __json__(self):
+        return self.ref
+
+def tags(**kwargs):
+    tags = []
+    for k, v in kwargs.iteritems():
+        if isinstance(v, TitledAWSObject):
+            v = Ref(v)
+        tags.append(odict([
+            ('Key', k),
+            ('Value', v)
+        ]))
+    return Tags(tags)
+
+tag = tags
+
+class Tags(object):
+    def __init__(self, tags):
+        self.tags = tags
+
+    def __add__(self, rhs):
+        if not isinstance(rhs, Tags):
+            raise TypeError("cannot merge 'Tags' and '%s' objects"%rhs.__class__.__name__)
+        return Tags(self.tags + rhs.tags)
+
+    def __call__(self, **kwargs):
+        return self + tags(kwargs)
+
+    def __json__(self):
+        return self.tags

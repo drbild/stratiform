@@ -12,16 +12,16 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from stratiform.base import NameableAWSObject, prop
 
-__version_info__ = ('0', '1', '0-SNAPSHOT')
-__version__ = '.'.join(__version_info__)
+class Output(NameableAWSObject):
+    @staticmethod
+    def props():
+        return [prop('Value', NameableAWSObject),
+                prop('Description', basestring),
+                prop('Condition')]
 
-from stratiform.base import ref
-from stratiform.common import *
+#### Public API ####
+output = Output
 
-from stratiform.templates import *
-from stratiform.parameters import *
-from stratiform.conditions import *
-from stratiform.mappings import *
-from stratiform.resources import *
-from stratiform.outputs import *
+__all__ = ['output']

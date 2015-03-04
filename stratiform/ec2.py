@@ -19,7 +19,10 @@ from stratiform.utils import snake_case, super_copy
 
 from stratiform.common import NameableAWSObject
 from stratiform.constants import aws_provided_dns
+
 from stratiform.types import *
+from stratiform.types import DomainName, DomainNameServers, CIDR, \
+                             AvailabilityZone, PortRange, IpProtocol, AclAction
 
 from stratiform.common import prop
 from stratiform.resources import Resource, Tags

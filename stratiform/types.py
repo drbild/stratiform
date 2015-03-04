@@ -67,7 +67,6 @@ class AvailabilityZone(Wrapper):
     pass
 
 #### Public API ####
-version = Version
 cidr = CIDR
 protocol = ip_protocol = IpProtocol
 port = ports = port_range = PortRange
@@ -76,6 +75,6 @@ domain_name = DomainName
 domain_name_servers = DomainNameServers
 availability_zone = AvailabilityZone
 
-__all__ = ['version', 'cidr', 'protocol', 'ip_protocol', 'port' ,
-           'ports', 'port_range', 'acl_action', 'domain_name',
+__all__ = ['cidr', 'protocol', 'ip_protocol', 'port', 'ports',
+           'port_range', 'acl_action', 'domain_name',
            'domain_name_servers', 'availability_zone']

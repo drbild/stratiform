@@ -44,22 +44,22 @@ public_network_acl = ec2.network_acl("PublicNetworkAcl", vpc, tags_public_named)
                         .egress("OutboundEphemeral", 140, allow, all_cidr, tcp, linux_ephemeral_ports)
 
 # Outputs
-vpc_id                = output("VpcId", vpc),
-public_subnet_id      = output("PublicSubnetId", public_subnet),
+vpc_id                = output("VpcId", vpc)
+public_subnet_id      = output("PublicSubnetId", public_subnet)
 public_route_table_id = output("PublicRouteTableId", public_route_table)
 
 # Create template
 t = template("VPC stack for bigsky docker registry")
-t = t.add_all([deployment,
-               domain_name,
-               vpc,
-               dhcp_options,
-               internet_gateway,
-               public_subnet,
-               public_route_table,
-               public_network_acl,
-               vpc_id,
-               public_subnet_id,
-               public_route_table_id])
+t = t.add(deployment,
+          domain_name,
+          vpc,
+          dhcp_options,
+          internet_gateway,
+          public_subnet,
+          public_route_table,
+          public_network_acl,
+          vpc_id,
+          public_subnet_id,
+          public_route_table_id)
 print t
 

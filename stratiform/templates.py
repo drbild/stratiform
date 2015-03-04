@@ -12,129 +12,84 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import json
+import copy, json
 from collections import OrderedDict as odict
-from copy import copy
 
-from stratiform.utils import JSONEncoder
-from stratiform.utils import class_name, camel_case, super_copy, shallow_copy_attr
+from stratiform.utils import JSONEncoder, Wrapper, class_name, super_copy
+from stratiform.common import AWSObject, prop
 
-from stratiform.common import prop
-from stratiform.common import AWSObject
-
-from stratiform.types import *
-
-from stratiform.outputs import Output
 from stratiform.parameters import Parameter
-from stratiform.resources import Resource, siblings
+from stratiform.mappings   import Mapping
+from stratiform.conditions import Condition
+from stratiform.resources  import Resource, siblings
+from stratiform.outputs    import Output
+
+class Version(Wrapper):
+    pass
+
+DEFAULT_VERSION = Version("2010-09-09")
 
 class Template(AWSObject):
     @staticmethod
     def props():
         return [prop('Description', basestring),
-                prop('AWSTemplateFormatVersion', Version),
-                prop('Parameters', list),
-                prop('Mappings',   list),
-                prop('Conditions', list),
-                prop('Resources',  list),
-                prop('Outputs',    list)]
+                prop('AWSTemplateFormatVersion', Version, default=DEFAULT_VERSION),
+                prop('Parameters', odict),
+                prop('Mappings',   odict),
+                prop('Conditions', odict),
+                prop('Resources',  odict),
+                prop('Outputs',    odict)]
 
-    DEFAULT_VERSION = version("2010-09-09")
+    __collections = ['parameters', 'mappings', 'conditions',
+                    'resources', 'outputs']
 
     def __init__(self, *args, **kwargs):
+        for attr in Template.__collections:
+            kwargs.setdefault(attr, odict())
         super(Template, self).__init__(*args, **kwargs)
-
-        if not hasattr(self, 'aws_template_format_version'):
-            self.aws_template_format_version = Template.DEFAULT_VERSION
-
-        self._ensure_odict_if_present('parameters')
-        self._ensure_odict_if_present('mappings')
-        self._ensure_odict_if_present('conditions')
-        self._ensure_odict_if_present('resources')
-        self._ensure_odict_if_present('outputs')
-
-    def namespace(self, namespace):
-        result = copy(self)
-        result.namespace = namespace
-        return result
-
-    def add_with_ns(self, **kwargs):
-        result = self
-        for name, obj in kwargs.iteritems():
-            result = result.add(obj, camel_case(name))
-            result.namespace[name] = obj
-        return result
-
-    def _ensure_odict_if_present(self, attr):
-        """If the specified attribute is present, converts it to an
-        OrderedDictionary.
-
-        """
-        if hasattr(self, attr):
-            safe = odict(getattr(self, attr))
-            setattr(self, attr, safe)
-
-    def _ensure_present(self, attr):
-        if not hasattr(self, attr):
-            setattr(self, attr, odict())
 
     def __copy__(self):
         result = super_copy(Template, self)
-        shallow_copy_attr(result, 'parameters')
-        shallow_copy_attr(result, 'mappings')
-        shallow_copy_attr(result, 'conditions')
-        shallow_copy_attr(result, 'resources')
-        shallow_copy_attr(result, 'outputs')
+        for attr in Template.__collections:
+            orig = getattr(result, attr)
+            setattr(result, attr, copy.copy(orig))
         return result
 
     def __str__(self):
         return self.to_json()
 
-    def add_all(self, items):
-        result = self
+    def add(self, *items):
+        result = copy.copy(self)
+        result.__add(*items)
+        return result
+
+    def __add(self, *items):
         for item in items:
-            result = result.add(item, strict=False)
-        return result
+            coll = self.__collection_for(item)
+            coll[item.name] = item
+            self.__add_siblings(item)
 
-    def add(self, obj, name=None, strict=True):
-        if isinstance(obj, Parameter):
-            return self.parameter(obj, name)
-#        if isinstance(obj, Mapping):
-#            return self.mapping(obj, name)
-#        if isinstance(obj, Condition):
-#            return self.condition(obj, name)
-        if isinstance(obj, Resource):
-            return self.resource(obj, name)
-        if isinstance(obj, Output):
-            return self.output(obj, name)
-        if strict:
-            raise TypeError("Cannot object of type '%s' to template"%class_name(obj))
+    def __add_siblings(self, item):
+        if hasattr(item, 'siblings'):
+            self.__add(*item.siblings)
+
+    def __collection_for(self, item):
+        if isinstance(item, Parameter):
+            return self.parameters
+        elif isinstance(item, Mapping):
+            return self.mappings
+        elif isinstance(item, Condition):
+            return self.conditions
+        elif isinstance(item, Resource):
+            return self.resources
+        elif isinstance(item, Output):
+            return self.outputs
         else:
-            return self
-
-    def parameter(self, parameter, name=None):
-        name = name or parameter.name
-        result = copy(self)
-        result._ensure_present('parameters')
-        result.parameters[name] = parameter
-        return result
-
-    def mapping(self, mapping, name=None):
-        name = name or mapping.name
-        result = copy(self)
-        result._ensure_present('mappings')
-        result.mappings[name] = mapping
-        return result
-
-    def condition(self, condition, name=None):
-        name = name or condition.name
-        result = copy(self)
-        result._ensure_present('conditions')
-        result.conditions[name] = condition
-        return result
+            msg = "Argument of type '%s' is valid in template"
+            raise TypeError(msg%type(item))
 
     def resource(self, resource, name=None):
-        result = copy(self)
+        result = copy.copy(self)
         result._resource(resource, name)
         for resource in siblings(resource):
             result._resource(resource)
@@ -147,16 +102,16 @@ class Template(AWSObject):
 
     def output(self, output, name=None):
         name = name or output.name
-        result = copy(self)
+        result = copy.copy(self)
         result._ensure_present('outputs')
         result.outputs[name] = output
         return result
 
-    def to_json(self):
-        return json.dumps(self, cls=JSONEncoder,
-                          indent=4, separators=(',', ': '))
+    def to_json(self, indent=2):
+        return json.dumps(self, cls=JSONEncoder, indent=indent, separators=(',', ': '))
 
 #### Public API ####
 template = Template
+version  = Version
 
-__all__ = ['template']
+__all__ = ['template', 'version']

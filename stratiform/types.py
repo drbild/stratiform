@@ -14,8 +14,8 @@
 
 import re
 
+from stratiform.base import AWSObject, prop
 from stratiform.utils import Wrapper, ListWrapper
-from stratiform.common import AWSObject, prop
 
 class AvailabilityZone(Wrapper):
     pass

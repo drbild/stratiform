@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.common import named_as_ref
+from stratiform.base import named_as_ref
 
 class Fn(object):
     """Base class for AWS intrinsic functions

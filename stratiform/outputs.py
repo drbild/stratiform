@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.common import NameableAWSObject, prop
+from stratiform.base import NameableAWSObject, prop
 
 class Output(NameableAWSObject):
     @staticmethod

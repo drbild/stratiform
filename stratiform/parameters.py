@@ -12,9 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.common import NameableAWSObject
-from stratiform.common import prop
-
+from stratiform.base import NameableAWSObject, prop
 from stratiform.utils import Wrapper
 
 class Parameter(NameableAWSObject):

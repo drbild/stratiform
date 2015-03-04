@@ -16,7 +16,7 @@ import copy, json
 from collections import OrderedDict as odict
 
 from stratiform.utils import JSONEncoder, Wrapper, class_name, super_copy
-from stratiform.common import AWSObject, prop
+from stratiform.base import AWSObject, prop
 
 from stratiform.parameters import Parameter
 from stratiform.mappings   import Mapping

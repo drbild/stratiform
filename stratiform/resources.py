@@ -12,14 +12,11 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from copy import copy
 from collections import OrderedDict as odict
 
-from copy import copy
-
+from stratiform.base import AWSObject, NameableAWSObject, prop
 from stratiform.utils import class_name, super_copy
-
-from stratiform.common import AWSObject, NameableAWSObject
-from stratiform.common import prop
 
 def merge(*seqs):
     return [item for seq in seqs for item in seq]

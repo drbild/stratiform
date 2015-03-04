@@ -17,10 +17,8 @@ import json, re
 from collections import OrderedDict as odict
 from copy import copy
 
-from stratiform.utils import class_name, identity, snake_case, super_copy
+from stratiform.utils import class_name, snake_case, super_copy
 from stratiform.dispatchers import typed_dispatch
-
-#from stratiform.types import *
 
 def named_as_ref(obj):
     if isinstance(obj, NameableAWSObject) and hasattr(obj, 'name'):
@@ -45,7 +43,7 @@ class Property(object):
         self.name = name
         self.type = type
         self.attr = attr or snake_case(name)
-        self.func = func or identity
+        self.func = func or (lambda x: x)
         self.default= default
 
     def __repr__(self):
@@ -154,8 +152,6 @@ class Ref(AWSObject):
 
     def __json__(self):
         return {'Ref' : self.ref.name}
-
-
 
 #### Public API ####
 ref  = Ref

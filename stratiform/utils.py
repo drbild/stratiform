@@ -100,14 +100,8 @@ def shallow_copy_attr(instance, attr):
         orig = getattr(instance, attr)
         setattr(instance, attr, copy.copy(orig))
 
-def identity(obj):
-    """Identity function that returns its argument.
-
-    """
-    return obj
-
 # API
 
 __all__ = ['JSONEncoder, Wrapper, ListWrapper', 'class_name',
            'snake_case', 'camel_case', 'shallow_copy', 'super_copy',
-           'shallow_copy_attr', 'identity']
+           'shallow_copy_attr']

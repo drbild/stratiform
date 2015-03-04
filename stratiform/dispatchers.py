@@ -31,3 +31,37 @@ def named_args(func, self, args, kwargs):
             raise TypeError(err_msg%(func.__name__, k))
         kwargs[k] = v
     return func(**kwargs)
+
+@wrapt.decorator
+def typed_dispatch(func, self, args, kwargs):
+    """A decorator that converts positional args to keyword args before
+    dispatching the method. Positional args are assigned to names
+    based on their types, not their positions.  Types and names are
+    retrieved from the passed instance via the _arg_types(self) and
+    _arg_names(self) instance methods.
+
+    """
+    types = self.arg_types()
+    names = self.arg_names()
+    if len(types) != len(names):
+        msg = "%s must declare same number of types (%d given) and names (%d given) for dispatch"
+        raise TypeError(msg%(self.__class__.__name__, len(types), len(names)))
+    if len(args) > len(types):
+        msg = "%s() takes at most %d arguments(s) (%d given)"
+        raise TypeError(msg%(func.__name__, len(types), len(args)))
+    posargs = []
+    for v in args:
+        found_key = None
+        for k, t in zip(names, types):
+            if isinstance(v, t):
+                if found_key != None:
+                    msg = "%s() got ambigious argument. Matches both '%s' and '%s'"
+                    raise TypeError(msg%(func.__name__, found_key, k))
+                if k in kwargs:
+                    err_msg = "%s() got multiple values for keyword argument '%s'"
+                    raise TypeError(err_msg%(func.__name__, k))
+                found_key = k
+                kwargs[k] = v
+        if found_key == None:
+            posargs.append(v)
+    return func(*posargs, **kwargs)

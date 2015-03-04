@@ -12,24 +12,28 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from common import NameableAWSObject
-from common import required_prop as req_prop, optional_prop as opt_prop
+from stratiform.common import NameableAWSObject
+from stratiform.common import prop
 
 class Parameter(NameableAWSObject):
-    props = [req_prop('Type'),
-             opt_prop('Description'),
-             opt_prop('Default'),
-             opt_prop('AllowedValues'),
-             opt_prop('AllowedPattern'),
-             opt_prop('ConstraintDescription'),
-             opt_prop('MaxLength'),
-             opt_prop('MinLength'),
-             opt_prop('MaxValue'),
-             opt_prop('MinValue'),
-             opt_prop('NoEcho')]
+    @staticmethod
+    def props():
+        return [prop('Type', basestring),
+                prop('Description'),
+                prop('Default'),
+                prop('AllowedValues'),
+                prop('AllowedPattern'),
+                prop('ConstraintDescription'),
+                prop('MaxLength'),
+                prop('MinLength'),
+                prop('MaxValue'),
+                prop('MinValue'),
+                prop('NoEcho')]
 
 class PseudoParameter(NameableAWSObject):
-    props = []
+    @staticmethod
+    def props():
+        return []
 
 #### Public API ####
 parameter = Parameter

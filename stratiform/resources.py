@@ -19,7 +19,7 @@ from stratiform.copyutils import super_copy
 
 from stratiform.common import AWSObject, NameableAWSObject
 from stratiform.common import class_name
-from stratiform.common import required_prop as req_prop
+from stratiform.common import prop, required_prop as req_prop
 
 def merge(*seqs):
     return [item for seq in seqs for item in seq]
@@ -47,18 +47,20 @@ class Resource(NameableAWSObject):
         ])
 
 class Tag(AWSObject):
-    props = [req_prop('Key'),
-             req_prop('Value')]
+    @staticmethod
+    def props():
+        return [prop('Key'),
+                prop('Value')]
 
     def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        return "Tag<Key:'%s', Value:'%s'>"%(self.key, self.value)
+        print ''
+        print self.__dict__.keys()
+        print ''
+        return "Tag(%s='%s')"%(self.key, self.value)
 
 class Tags(object):
     def __init__(self, *tags, **kwtags):
-        kwtags = [Tag(k,v) for k, v in kwtags.iteritems()]
+        kwtags = [Tag(key=k,value=v) for k, v in kwtags.iteritems()]
         self.tags = merge(tags, kwtags)
 
     def __add__(self, rhs):

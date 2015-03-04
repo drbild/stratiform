@@ -19,7 +19,9 @@ from copy import copy
 from functools import partial
 
 from stratiform.copyutils import super_copy
-from stratiform.dispatchers import named_args
+from stratiform.dispatchers import typed_dispatch
+
+#from stratiform.types import *
 
 def class_name(obj):
     return obj.__class__.__name__
@@ -40,23 +42,51 @@ class JSONEncoder(json.JSONEncoder):
             return obj.__json__()
         return super(JSONEncoder, self).default(obj)
 
+def identity(self):
+    return self
+
+def unique_attr(seq, attr):
+    """Filters out objects with a duplicate attribute value
+    """
+    result = []
+    seen = set()
+    for s in seq:
+        a = getattr(s, attr)
+        if a not in seen:
+            seen.add(a)
+            result.append(s)
+    return result
+
 class Property(object):
-    def __init__(self, name, type=object, required=False, attr=None):
+    def __init__(self, name, type=None, attr=None, func=None, default=None):
         self.name = name
         self.type = type
-        self.required = required
         self.attr = attr or snake_case(name)
+        self.func = func or identity
+        self.default= default
+
+    def __repr__(self):
+        return "Property(%s, %r, %r, %r"%(self.name, self.type, self.attr, self.func)
+
+class AWSObjectType(type):
+    def __getattr__(cls, key):
+        for p in cls.props():
+            if key == p.type.__name__:
+                return p.type
+        raise AttributeError(key)
 
 class AWSObject(object):
     """Super class for all AWS objects that can be expressed in a
     template.
     """
 
-    @named_args
+    __metaclass__ = AWSObjectType
+
+    @typed_dispatch
     def __init__(self, **kwargs):
         self.__set_attrs__(**kwargs)
 
-    @named_args
+    @typed_dispatch
     def __call__(self, **kwargs):
         result = copy(self)
         result.__set_attrs__(**kwargs)
@@ -70,35 +100,68 @@ class AWSObject(object):
             setattr(self, k, v)
  
     def __attrs__(self):
-        return [p.attr for p in self.__props__()]
+        unique = unique_attr(self.__props__(), 'attr')
+        return [u.attr for u in unique]
 
-    def __named_args__(self):
-        return self.__attrs__()
+    def arg_names(self):
+        unique = unique_attr(self.__props__(), 'attr')
+        unique = filter(lambda p: p.type != None, unique)
+        return [u.attr for u in unique]
+
+    def arg_types(self):
+        unique = unique_attr(self.__props__(), 'attr')
+        unique = filter(lambda p: p.type != None, unique)
+        return [u.type for u in unique]
 
     def __props__(self):
-        return self.props
+        return self.props()
 
     def __json__(self):
         data = odict()
         for p in self.__props__():
             if hasattr(self, p.attr):
-                v = getattr(self, p.attr)
+                v = p.func(getattr(self, p.attr))
                 data[p.name] = named_as_ref(v)
+            elif p.default is not None:
+                v = p.default
+                data[p.name] = named_as_ref(p.default)
         return data
 
 class NameableAWSObject(AWSObject):
     """Super class for all AWS objects that can be assigned a name.
 
     """
+    def __init__(self, *args, **kwargs):
+        name, args = NameableAWSObject.__parse_args(args)
+        super(NameableAWSObject, self).__init__(*args, **kwargs)
+        if name:
+            self.name = name
+
+    def __call__(self, *args, **kwargs):
+        name, args = NameableAWSObject.__parse_args(args)
+        result = super(NameableAWSObject, self).__init__(*args, **kwargs)
+        if name:
+            result.name = name
+        return result
+    
+    @staticmethod
+    def __parse_args(args):
+        name = None
+        if len(args) >= 1 and isinstance(args[0], basestring):
+            name, args = args[0], args[1:]
+        return name, args
+
     def __attrs__(self):
         sattrs = super(NameableAWSObject, self).__attrs__()
         return ['name'] + sattrs
 
 class Ref(AWSObject):
-    props = [Property('referent', NameableAWSObject)]
+    @staticmethod
+    def props():
+        return [Property('Ref', NameableAWSObject, func='name')]
 
     def __json__(self):
-        return {'Ref' : self.referent.name}
+        return {'Ref' : self.ref.name}
 
 
 
@@ -106,7 +169,7 @@ class Ref(AWSObject):
 ref  = Ref
 
 prop = Property
-required_prop = partial(prop, required=True)
-optional_prop = partial(prop, required=False)
+required_prop = Property
+optional_prop = Property
 
 __all__ = ['ref', 'prop', 'required_prop', 'optional_prop']

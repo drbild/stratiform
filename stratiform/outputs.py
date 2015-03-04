@@ -12,13 +12,14 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from common import NameableAWSObject
-from common import required_prop as req_prop, optional_prop as opt_prop
+from stratiform.common import NameableAWSObject, prop
 
 class Output(NameableAWSObject):
-    props = [req_prop('Value'),
-             opt_prop('Description'),
-             opt_prop('Condition')]
+    @staticmethod
+    def props():
+        return [prop('Value'),
+                prop('Description'),
+                prop('Condition')]
 
 #### Public API ####
 output = Output

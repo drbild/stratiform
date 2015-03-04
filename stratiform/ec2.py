@@ -14,74 +14,129 @@
 
 from copy import copy
 
-from stratiform.common import snake_case
+from stratiform.common import snake_case, NameableAWSObject
 from stratiform.copyutils import super_copy
+
+from stratiform.constants import aws_provided_dns
+from stratiform.types import *
 
 from stratiform.common import prop, required_prop as req_prop, optional_prop as opt_prop
 from stratiform.resources import Resource, Tags
 
 class CustomerGateway(Resource):
     resource_type = 'AWS::EC2::CustomerGateway'
-    props = [req_prop('BgpAsn', int),
-             req_prop('IpAddress', basestring),
-             req_prop('Type', basestring),
-             opt_prop('Tags', Tags)]
+
+    def props():
+        return [prop('BgpAsn'),
+                prop('IpAddress', IpAddress),
+                prop('Type'),
+                prop('Tags', Tags)]
 
 class DHCPOptions(Resource):
     resource_type = 'AWS::EC2::DHCPOptions'
-    props = [opt_prop('DomainName', basestring),
-             opt_prop('DomainNameServers', list),
-             opt_prop('NetbiosNameServers', list),
-             opt_prop('NetbiosNodeType', int),
-             opt_prop('NtpServers', basestring),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('DomainName', DomainName),
+                prop('DomainNameServers', DomainNameServers, default=aws_provided_dns),
+                prop('NetbiosNameServers'),
+                prop('NetbiosNodeType'),
+                prop('NtpServers'),
+                prop('Tags', Tags)]
 
 class EIP(Resource):
     resource_type = 'AWS::EC2::EIP'
-    props = [opt_prop('Domain', basestring),
-             opt_prop('InstanceId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('Domain'),
+                prop('InstanceId', Instance)]
 
 class EIPAssociation(Resource):
     resource_type = 'AWS::EC2::EIPAssociation'
-    props = [opt_prop('AllocationId', basestring),
-             opt_prop('EIP', basestring),
-             opt_prop('InstanceId', basestring),
-             opt_prop('NetworkInterfaceId', basestring),
-             opt_prop('PrivateIpAdress', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('AllocationId'),
+                prop('EIP', EIP),
+                prop('InstanceId', Instance),
+                prop('NetworkInterfaceId', NetworkInterface),
+                prop('PrivateIpAddress', IpAddress)]
 
 class Instance(Resource):
     resource_type = 'AWS::EC2::Instance'
-    props = [opt_prop('AvailabilityZone', basestring),
-             opt_prop('BlockDeviceMappings', list),
-             opt_prop('DisableApiTermination', bool),
-             opt_prop('EbsOptimized', bool),
-             opt_prop('IamInstanceProfile', basestring),
-             req_prop('ImageId', basestring),
-             opt_prop('InstanceInitiatedShutdownBehavior', basestring),
-             opt_prop('InstanceType', basestring),
-             opt_prop('KernelId', basestring),
-             opt_prop('KeyName', basestring),
-             opt_prop('Monitoring', bool),
-             opt_prop('NetworkInterfaces', list),
-             opt_prop('PlacementGroupName', basestring),
-             opt_prop('PrivateIpAdress', basestring),
-             opt_prop('RamdiskId', basestring),
-             opt_prop('SecurityGroupIds', list),
-             opt_prop('SecurityGroups', list),
-             opt_prop('SourceDestCheck', bool),
-             opt_prop('SubnetId', basestring),
-             opt_prop('Tags', Tags),
-             opt_prop('UserData', basestring),
-             opt_prop('Volumes', list)]
+
+    @staticmethod
+    def props():
+        return [prop('AvailabilityZone', AvailiabilityZone),
+                prop('BlockDeviceMappings'),
+                prop('DisableApiTermination'),
+                prop('EbsOptimized'),
+                prop('IamInstanceProfile'),
+                prop('ImageId', ImageId),
+                prop('InstanceInitiatedShutdownBehavior'),
+                prop('InstanceType'),
+                prop('KernelId'),
+                prop('KeyName'),
+                prop('Monitoring'),
+                prop('NetworkInterfaces'),
+                prop('PlacementGroupName'),
+                prop('PrivateIpAdress', IpAddress),
+                prop('RamdiskId'),
+                prop('SecurityGroupIds'),
+                prop('SecurityGroups'),
+                prop('SourceDestCheck'),
+                prop('SubnetId', Subnet),
+                prop('Tags', Tags),
+                prop('UserData'),
+                prop('Volumes')]
 
 class InternetGateway(Resource):
     resource_type = 'AWS::EC2::InternetGateway'
-    props = [opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('Tags', Tags)]
+
+    def __attrs__(self):
+        sattrs = super(InternetGateway, self).__attrs__()
+        return sattrs + ['vpc']
+
+    def arg_names(self):
+        sarg_names = super(InternetGateway, self).arg_names()
+        return sarg_names + ['vpc']
+
+    def arg_types(self):
+        sarg_types = super(InternetGateway, self).arg_types()
+        return sarg_types + [VPC]
+
+    def __siblings__(self):
+        siblings = super(InternetGateway, self).__siblings__()
+        siblings += self._vpc_attachment()
+        return siblings
+
+    @property
+    def vpc(self):
+        return self._vpc
+    
+    @vpc.setter
+    def vpc(self, value):
+        self._vpc = value
+
+    def _vpc_attachment(self):
+        if not hasattr(self, 'vpc'):
+            return []
+        attachment_name = ''.join([self.name, self._vpc.name, "Attachment"])
+        attachment = VPCGatewayAttachment(attachment_name, self._vpc, self)
+        return [attachment]
 
 class NetworkAcl(Resource):
     resource_type = 'AWS::EC2::NetworkAcl'
-    props = [req_prop('VpcId', basestring),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('VpcId', VPC),
+                prop('Tags', Tags)]
 
     def entry(self, *args, **kwargs):
         result = copy(self)
@@ -99,52 +154,73 @@ class NetworkAcl(Resource):
 
 class NetworkAclEntry(Resource):
     resource_type = 'AWS::EC2::NetworkAclEntry'
-    props = [req_prop('CidrBlock', basestring),
-             req_prop('Egress', bool),
-             opt_prop('Icmp', dict),
-             req_prop('NetworkAclId', basestring),
-             req_prop('PortRange', object),
-             req_prop('Protocol', int),
-             req_prop('RuleAction', object),
-             req_prop('RuleNumber', int)]
+
+    @staticmethod
+    def props():
+        return [prop('CidrBlock', CIDR),
+                prop('Egress', bool),
+                prop('Icmp'),
+                prop('NetworkAclId', NetworkAcl),
+                prop('PortRange', PortRange),
+                prop('Protocol', IpProtocol),
+                prop('RuleAction', AclAction),
+                prop('RuleNumber', int)]
 
 class NetworkInterface(Resource):
     resource_type = 'AWS::EC2::NetworkInterface'
-    props = [opt_prop('Description', basestring),
-             opt_prop('GroupSet', list),
-             opt_prop('PrivateIpAddress', basestring),
-             opt_prop('PrivateIpAddresses', list),
-             opt_prop('SecondaryPrivateIpAddressCount', int),
-             opt_prop('SourceDestCheck', bool),
-             req_prop('SubnetId', basestring),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('Description'),
+                prop('GroupSet'),
+                prop('PrivateIpAddress', IpAddress),
+                prop('PrivateIpAddresses'),
+                prop('SecondaryPrivateIpAddressCount'),
+                prop('SourceDestCheck', bool),
+                prop('SubnetId', Subnet),
+                prop('Tags', Tags)]
 
 class NetworkInterfaceAttachment(Resource):
     resource_type = 'AWS::EC2::NetworkInterfaceAttachment'
-    props = [opt_prop('DeleteOnTermination', bool),
-             req_prop('DeviceIndex', int),
-             req_prop('InstanceId', basestring),
-             req_prop('NetworkInterfaceId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('DeleteOnTermination', bool),
+                prop('DeviceIndex', int),
+                prop('InstanceId', Instance),
+                prop('NetworkInterfaceId', NetworkInterface)]
 
 class Route(Resource):
     resource_type = 'AWS::EC2::Route'
-    props = [req_prop('DestinationCidrBlock', basestring),
-             opt_prop('GatewayId', basestring),
-             opt_prop('InstanceId', basestring),
-             opt_prop('NetworkInterfaceId', basestring),
-             opt_prop('RouteTableId', basestring),
-             opt_prop('VpcPeeringConnectionId', basestring)]
 
-rroute = Route
+    @staticmethod
+    def props():
+        return [prop('DestinationCidrBlock', CIDR),
+                prop('GatewayId', InternetGateway),
+                prop('InstanceId', Instance),
+                prop('NetworkInterfaceId', NetworkInterface),
+                prop('RouteTableId', RouteTable),
+                prop('VpcPeeringConnectionId', VPCPeeringConnection)]
 
 class RouteTable(Resource):
-    resource_type = 'AWS::EC2::RouteTable' 
-    props = [req_prop('VpcId', basestring),
-             opt_prop('Tags', Tags)]
+    resource_type = 'AWS::EC2::RouteTable'
+
+    @staticmethod
+    def props():
+        return [prop('VpcId', VPC),
+                prop('Tags', Tags)]
 
     def __attrs__(self):
         sattrs = super(RouteTable, self).__attrs__()
         return sattrs + ['subnet']
+
+    def arg_names(self):
+        sarg_names = super(RouteTable, self).arg_names()
+        return sarg_names + ['subnet']
+
+    def arg_types(self):
+        sarg_types = super(RouteTable, self).arg_types()
+        return sarg_types + [Subnet]
 
     def __siblings__(self):
         siblings = super(RouteTable, self).__siblings__()
@@ -170,16 +246,19 @@ class RouteTable(Resource):
     def route(self, *args, **kwargs):
         result = copy(self)
         kwargs['route_table_id'] = self
-        result.siblings.append(rroute(*args, **kwargs))
+        result.siblings.append(Route(*args, **kwargs))
         return result
 
 class SecurityGroup(Resource):
     resource_type = 'AWS::EC2::SecurityGroup'
-    props = [opt_prop('VpcId', basestring),
-             req_prop('GroupDescription', basestring),
-             opt_prop('SecurityGroupEgress', list),
-             opt_prop('SecurityGroupIngress', list),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('VpcId', Vpc),
+                prop('GroupDescription'),
+                prop('SecurityGroupEgress'),
+                prop('SecurityGroupIngress'),
+                prop('Tags', Tags)]
 
     def __init__(self, *args, **kwargs):
         super(SecurityGroup, self).__init__(*args, **kwargs)
@@ -204,69 +283,106 @@ class SecurityGroup(Resource):
 
 class SecurityGroupEgress(Resource):
     resource_type = 'AWS::EC2::SecurityGroupEgress'
-    props = [opt_prop('CidrIp', basestring),
-             opt_prop('DestinationSecurityGroupId', basestring),
-             req_prop('IpProtocol', basestring),
-             req_prop('FromPort', int),
-             req_prop('ToPort', int),
-             req_prop('GroupId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('CidrIp', CIDR),
+                prop('DestinationSecurityGroupId'),
+                prop('IpProtocol', IpProtocol),
+                prop('FromPort', PortRange, 'port_range', PortRange.from_port),
+                prop('ToPort', PortRange, 'port_range', PortRange.to_port),
+                prop('GroupId')]
 
 class SecurityGroupIngress(Resource):
     resource_type = 'AWS::EC2::SecurityGroupIgress'
-    props = [opt_prop('CidrIp', basestring),
-             opt_prop('SourceSecurityGroupId', basestring),
-             opt_prop('SourceSecurityGroupName', basestring),
-             opt_prop('SourceSecurityGroupOwnerId', basestring),
-             req_prop('IpProtocol', basestring),
-             req_prop('FromPort', int),
-             req_prop('ToPort', int),
-             req_prop('GroupId', basestring),
-             req_prop('GroupName', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('CidrIp', CIDR),
+                prop('SourceSecurityGroupId'),
+                prop('SourceSecurityGroupName'),
+                prop('SourceSecurityGroupOwnerId'),
+                prop('IpProtocol', IpProtocol),
+                prop('FromPort', PortRange, 'port_range', PortRange.from_port),
+                prop('ToPort', PortRange, 'port_range', PortRange.to_port),
+                prop('GroupId'),
+                prop('GroupName')]
 
 class Subnet(Resource):
     resource_type = 'AWS::EC2::Subnet'
-    props = [opt_prop('AvailabilityZone', basestring),
-             req_prop('CidrBlock', basestring),
-             req_prop('VpcId', basestring),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('AvailabilityZone', AvailabilityZone),
+                prop('CidrBlock', CIDR),
+                prop('VpcId', VPC),
+                prop('Tags', Tags)]
 
 class SubnetNetworkAclAssociation(Resource):
     resource_type = 'AWS::EC2::SubnetNetworkAclAssociation'
-    props = [req_prop('SubnetId', basestring),
-             req_prop('NetworkAclId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('SubnetId', Subnet),
+                prop('NetworkAclId', NetworkAcl)]
 
 class SubnetRouteTableAssociation(Resource):
     resource_type = 'AWS::EC2::SubnetRouteTableAssociation'
-    props = [req_prop('RouteTableId', basestring),
-             req_prop('SubnetId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('RouteTableId', RouteTable),
+                prop('SubnetId', Subnet)]
 
 class Volume(Resource):
     resource_type = 'AWS::EC2::Volume'
-    props = [req_prop('AvailabilityZone', basestring),
-             opt_prop('Encrypted', bool),
-             opt_prop('Iops', int),
-             opt_prop('Size', basestring),
-             opt_prop('SnapshotId', basestring),
-             opt_prop('Tags', Tags),
-             opt_prop('VolumeType', basestring)]
+
+    @staticmethod
+    def props():
+        [prop('AvailabilityZone', AvailabilityZone),
+         prop('Encrypted'),
+         prop('Iops'),
+         prop('Size'),
+         prop('SnapshotId'),
+         prop('Tags', Tags),
+         prop('VolumeType')]
 
 class VolumeAttachment(Resource):
     resource_type = 'AWS::EC2::VolumeAttachment'
-    props = [req_prop('Device', basestring),
-             req_prop('InstanceId', basestring),
-             req_prop('VolumeId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('Device'),
+                prop('InstanceId', Instance),
+                prop('VolumeId', Volumne)]
 
 class VPC(Resource):
     resource_type = 'AWS::EC2::VPC'
-    props = [req_prop('CidrBlock', basestring),
-             opt_prop('EnableDnsSupport', bool),
-             opt_prop('EnableDnsHostnames', bool),
-             opt_prop('InstanceTenancy', basestring),
-             opt_prop('Tags', Tags)]
+
+    class Tenancy(Wrap):
+        pass
+    Tenancy.DEFAULT   = Tenancy('default')
+    Tenancy.DEDICATED = Tenancy('dedicated')
+
+    @staticmethod
+    def props():
+        return [prop('CidrBlock', CIDR),
+                prop('EnableDnsSupport'),
+                prop('EnableDnsHostnames'),
+                prop('InstanceTenancy', VPC.Tenancy),
+                prop('Tags', Tags)]
 
     def __attrs__(self):
         sattrs = super(VPC, self).__attrs__()
         return sattrs + ['dhcp_options']
+
+    def arg_names(self):
+        sarg_names = super(VPC, self).arg_names()
+        return sarg_names + ['dhcp_options']
+
+    def arg_types(self):
+        sarg_types = super(VPC, self).arg_types()
+        return sarg_types + [DHCPOptions]
 
     def __siblings__(self):
         siblings = super(VPC, self).__siblings__()
@@ -291,20 +407,29 @@ class VPC(Resource):
 
 class VPCDHCPOptionsAssociation(Resource):
     resource_type = 'AWS::EC2::VPCDHCPOptionsAssociation'
-    props = [req_prop('DhcpOptionsId', basestring),
-             req_prop('VpcId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('DhcpOptionsId', DHCPOptions),
+                prop('VpcId', VPC)]
 
 class VPCGatewayAttachment(Resource):
     resource_type = 'AWS::EC2::VPCGatewayAttachment'
-    props = [req_prop('VpcId', basestring),
-             opt_prop('InternetGatewayId', basestring),
-             opt_prop('VpnGatewayId', basestring)]
+
+    @staticmethod
+    def props():
+        return [prop('VpcId', VPC),
+                prop('InternetGatewayId', InternetGateway),
+                prop('VpnGatewayId')]
 
 class VPCPeeringConnection(Resource):
     resource_type = 'AWS::EC2::VPCPeeringConnection'
-    props = [req_prop('PeerVpcId', basestring),
-             req_prop('VpcId', basestring),
-             opt_prop('Tags', Tags)]
+
+    @staticmethod
+    def props():
+        return [prop('PeerVpcId'),
+                prop('VpcId'),
+                prop('Tags', Tags)]
 
 # TODO: Add VPN* resource types
 
@@ -312,8 +437,13 @@ class VPCPeeringConnection(Resource):
 
 # Generate functional snake_cased form of constructors for public API
 def __is_resource(obj):
-    return type(obj) is type and issubclass(obj, Resource)
+    return issubclass(type(obj), type) and issubclass(obj, Resource)
 constructors = {snake_case(name): obj for (name, obj) in globals().items() if __is_resource(obj)}
 globals().update(constructors)
 
-__all__ = sorted([] + constructors.keys())
+def vpc_with_dns(*args, **kwargs):
+    kwargs['enable_dns_support'] = True
+    kwargs['enable_dns_hostnames'] = True
+    return vpc(*args, **kwargs)
+
+__all__ = sorted(['vpc_with_dns'] + constructors.keys())

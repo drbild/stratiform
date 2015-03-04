@@ -18,24 +18,27 @@ from collections import OrderedDict as odict
 from copy import copy
 from stratiform.copyutils import super_copy, shallow_copy_attr
 
-from stratiform.common import class_name
+from stratiform.common import class_name, prop
 from stratiform.common import AWSObject, JSONEncoder
-from stratiform.common import required_prop as req_prop, optional_prop as opt_prop
+
+from stratiform.types import *
 
 from stratiform.outputs import Output
 from stratiform.parameters import Parameter
 from stratiform.resources import Resource, siblings
 
 class Template(AWSObject):
-    props = [opt_prop('Description'),
-             req_prop('AWSTemplateFormatVersion'),
-             opt_prop('Parameters'),
-             opt_prop('Mappings'),
-             opt_prop('Conditions'),
-             req_prop('Resources'),
-             opt_prop('Outputs')]
+    @staticmethod
+    def props():
+        return [prop('Description', basestring),
+                prop('AWSTemplateFormatVersion', Version),
+                prop('Parameters', list),
+                prop('Mappings',   list),
+                prop('Conditions', list),
+                prop('Resources',  list),
+                prop('Outputs',    list)]
 
-    DEFAULT_VERSION = "2010-09-09"
+    DEFAULT_VERSION = version("2010-09-09")
 
     def __init__(self, *args, **kwargs):
         super(Template, self).__init__(*args, **kwargs)
@@ -70,6 +73,9 @@ class Template(AWSObject):
         shallow_copy_attr(result, 'resources')
         shallow_copy_attr(result, 'outputs')
         return result
+
+    def __str__(self):
+        return self.to_json()
 
     def add_all(self, items):
         result = self

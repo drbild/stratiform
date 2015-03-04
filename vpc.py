@@ -1,20 +1,14 @@
-from stratiform.constants import *
-from stratiform.types import *
+from stratiform import *
 
-from stratiform.templates import template
-from stratiform.outputs import output
-from stratiform.parameters import string_parameter, StackName
-from stratiform.resources import tag, tags
-
-from stratiform.functions import join
-
+import stratiform.functions as fn
 import stratiform.ec2 as ec2
-from stratiform.ec2 import allow
 
 # Constants
 cidr_vpc    = cidr("10.20.0.0/16")
 cidr_public = cidr("10.20.10.0/24")
 cidr_ext    = cidr("98.206.146.32/32")
+
+zone        = az('us-west-2a')
 
 # Parameters
 deployment  = string_parameter("Deployment", "The environment to which this stack is deployed",
@@ -25,24 +19,24 @@ domain_name = string_parameter("DomainName", "The domain name to provide to DHCP
 # Common tags
 tags_base = tags(Environment=deployment, Stack=StackName)
 tags_public = tags_base + tag(Network="public")
-tags_public_named = tags_public + tag(Name=join('-', [StackName, 'public']))
+tags_public_named = tags_public + tag(Name=fn.join('-', [StackName, 'public']))
 
 # Resources
 dhcp_options     = ec2.dhcp_options("DHCPOptions", tags_base + tag(Name=StackName), domain_name=domain_name)
 vpc              = ec2.vpc_with_dns("VPC", cidr_vpc, dhcp_options, tags_base + tag(Name=StackName))
 
 internet_gateway   = ec2.internet_gateway("InternetGateway", vpc, tags_public_named)
-public_subnet      = ec2.subnet("PublicSubnet", vpc, us_west_2a, cidr_public, tags_public_named)
+public_subnet      = ec2.subnet("PublicSubnet", vpc, zone, cidr_public, tags_public_named)
 public_route_table = ec2.route_table("PublicRouteTable", vpc, public_subnet, tags_public_named) \
-                        .route("PublicRoute", all_cidr, internet_gateway)
+                        .route("PublicRoute", cidr_all, internet_gateway)
 
 public_network_acl = ec2.network_acl("PublicNetworkAcl", vpc, tags_public_named) \
-                        .allow_ingress("InboundHTTPS",     110, cidr_ext, tcp, https) \
-                        .allow_ingress("InboundSSH",       120, cidr_ext, tcp, ssh) \
-                        .allow_ingress("InboundEphemeral", 140, all_cidr, tcp, all_ephemeral_ports) \
-                        .allow_egress("OutboundHTTP",      100, all_cidr, tcp, http) \
-                        .allow_egress("OutboundHTTPS",     110, all_cidr, tcp, https) \
-                        .allow_egress("OutboundEphemeral", 140, all_cidr, tcp, linux_ephemeral_ports)
+                        .allow_ingress("InboundHTTPS",     110, tcp, cidr_ext, https) \
+                        .allow_ingress("InboundSSH",       120, tcp, cidr_ext, ssh) \
+                        .allow_ingress("InboundEphemeral", 140, tcp, cidr_all, ephemeral) \
+                        .allow_egress("OutboundHTTP",      100, tcp, cidr_all, http) \
+                        .allow_egress("OutboundHTTPS",     110, tcp, cidr_all, https) \
+                        .allow_egress("OutboundEphemeral", 140, tcp, cidr_all, ephemeral_linux)
 
 # Outputs
 vpc_id                = output("VpcId", vpc)

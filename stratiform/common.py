@@ -35,7 +35,7 @@ IpProtocol.udp  = IpProtocol(17)
 
 class IpAddress(Wrapper):
     pass
-IpAddress.loopback = IpAddress('127.0.0.1')
+IpAddress.localhost = IpAddress('127.0.0.1')
 
 class PortRange(AWSObject):
     @staticmethod

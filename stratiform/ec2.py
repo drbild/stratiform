@@ -15,9 +15,9 @@
 from copy import copy
 
 from stratiform.base import NameableAWSObject, prop
+from stratiform.common import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
 from stratiform.utils import Wrapper, ListWrapper, snake_case, super_copy
 
-from stratiform.types import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
 from stratiform.resources import Resource, Tags
 
 class AclAction(Wrapper):

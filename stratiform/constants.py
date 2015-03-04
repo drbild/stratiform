@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.types import cidr, protocol, port, ports, acl_action, availability_zone
+from stratiform.types import cidr, protocol, port, ports, availability_zone
 
 # common CIDR constants
 all_cidr = cidr("0.0.0.0/0")
@@ -42,13 +42,6 @@ pop3s = port(995)
 mssql = port(1433)
 mysql = port(3306)
 rdp   = port(3389)
-
-# acl action constants
-allow = acl_action("allow")
-deny  = acl_action("deny")
-
-# domain name servers
-aws_provided_dns = ['AmazonProvidedDns']
 
 # availability zones
 us_west_2a = availability_zone("us-west-2a")

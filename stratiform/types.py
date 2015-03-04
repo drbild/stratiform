@@ -17,13 +17,13 @@ import re
 from stratiform.utils import Wrapper, ListWrapper
 from stratiform.common import AWSObject, prop
 
-class Version(Wrapper):
-    pass
-
-class BgpAsn(Wrapper):
+class AvailabilityZone(Wrapper):
     pass
 
 class CIDR(Wrapper):
+    pass
+
+class DomainName(Wrapper):
     pass
 
 class IpProtocol(Wrapper):
@@ -39,8 +39,7 @@ class PortRange(AWSObject):
                 prop('To', attr='to_port')]
 
     def __init__(self, ports):
-        ports = str(ports)
-        match = re.compile(r'^(\d+)(?:-+(\d+))?$').match(ports)
+        match = re.compile(r'^(\d+)(?:-+(\d+))?$').match(str(ports))
         from_port = match.groups()[0]
         to_port   = match.groups()[1] or from_port
         super(PortRange, self).__init__(from_port=from_port, to_port=to_port)
@@ -51,30 +50,13 @@ class PortRange(AWSObject):
     def to_port(self):
         return self.to_port
 
-class AclAction(Wrapper):
-    pass
-
-class DomainName(Wrapper):
-    pass
-
-class DomainNameServers(ListWrapper):
-    pass
-
-class VPCConnectionType(Wrapper):
-    pass
-
-class AvailabilityZone(Wrapper):
-    pass
-
 #### Public API ####
-cidr = CIDR
-protocol = ip_protocol = IpProtocol
-port = ports = port_range = PortRange
-acl_action = AclAction
-domain_name = DomainName
-domain_name_servers = DomainNameServers
 availability_zone = AvailabilityZone
+address           = IpAddress
+cidr              = CIDR
+domain_name       = DomainName
+port              = ports = port_range = PortRange
+protocol          = IpProtocol
 
-__all__ = ['cidr', 'protocol', 'ip_protocol', 'port', 'ports',
-           'port_range', 'acl_action', 'domain_name',
-           'domain_name_servers', 'availability_zone']
+__all__ = ['address', 'availability_zone', 'cidr', 'domain_name',
+           'port', 'ports', 'port_range', 'protocol']

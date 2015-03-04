@@ -24,21 +24,9 @@ from stratiform.common import prop
 def merge(*seqs):
     return [item for seq in seqs for item in seq]
 
-def siblings(obj):
-    return obj.__siblings__()
-
 class Resource(NameableAWSObject):
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
-        self.siblings = []
-
-    def __copy__(self):
-        result = super_copy(Resource, self)
-        result.siblings = copy(result.siblings)
-        return result
-
-    def __siblings__(self):
-        return self.siblings
 
     def __json__(self):
         return odict([

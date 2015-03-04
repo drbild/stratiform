@@ -68,11 +68,17 @@ class AWSObject(object):
     @typed_dispatch
     def __init__(self, **kwargs):
         self.__set_attrs__(**kwargs)
+        self._siblings = []
 
     @typed_dispatch
     def __call__(self, **kwargs):
         result = copy(self)
         result.__set_attrs__(**kwargs)
+        return result
+
+    def __copy__(self):
+        result = super_copy(AWSObject, self)
+        result._siblings = copy(result._siblings)
         return result
 
     def __set_attrs__(self, **kwargs):
@@ -95,6 +101,9 @@ class AWSObject(object):
         unique = unique_attr(self.__props__(), 'attr')
         unique = filter(lambda p: p.type != None, unique)
         return [u.type for u in unique]
+
+    def siblings(self):
+        return self._siblings
 
     def __props__(self):
         return self.props()

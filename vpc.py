@@ -9,6 +9,7 @@ from stratiform.resources import tag, tags
 from stratiform.functions import join
 
 import stratiform.ec2 as ec2
+from stratiform.ec2 import allow
 
 # Constants
 cidr_vpc    = cidr("10.20.0.0/16")
@@ -36,12 +37,12 @@ public_route_table = ec2.route_table("PublicRouteTable", vpc, public_subnet, tag
                         .route("PublicRoute", all_cidr, internet_gateway)
 
 public_network_acl = ec2.network_acl("PublicNetworkAcl", vpc, tags_public_named) \
-                        .ingress("InboundHTTPS",     110, allow, cidr_ext, tcp, https) \
-                        .ingress("InboundSSH",       120, allow, cidr_ext, tcp, ssh) \
-                        .ingress("InboundEphemeral", 140, allow, all_cidr, tcp, all_ephemeral_ports) \
-                        .egress("OutboundHTTP",      100, allow, all_cidr, tcp, http) \
-                        .egress("OutboundHTTPS",     110, allow, all_cidr, tcp, https) \
-                        .egress("OutboundEphemeral", 140, allow, all_cidr, tcp, linux_ephemeral_ports)
+                        .allow_ingress("InboundHTTPS",     110, cidr_ext, tcp, https) \
+                        .allow_ingress("InboundSSH",       120, cidr_ext, tcp, ssh) \
+                        .allow_ingress("InboundEphemeral", 140, all_cidr, tcp, all_ephemeral_ports) \
+                        .allow_egress("OutboundHTTP",      100, all_cidr, tcp, http) \
+                        .allow_egress("OutboundHTTPS",     110, all_cidr, tcp, https) \
+                        .allow_egress("OutboundEphemeral", 140, all_cidr, tcp, linux_ephemeral_ports)
 
 # Outputs
 vpc_id                = output("VpcId", vpc)

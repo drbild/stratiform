@@ -14,18 +14,21 @@
 
 from copy import copy
 
-from stratiform.utils import Wrapper
-from stratiform.utils import snake_case, super_copy
-
 from stratiform.common import NameableAWSObject
-from stratiform.constants import aws_provided_dns
-
-from stratiform.types import *
-from stratiform.types import DomainName, DomainNameServers, CIDR, \
-                             AvailabilityZone, PortRange, IpProtocol, AclAction
+from stratiform.utils import Wrapper, ListWrapper, snake_case, super_copy
 
 from stratiform.common import prop
+from stratiform.types import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
 from stratiform.resources import Resource, Tags
+
+class AclAction(Wrapper):
+    pass
+AclAction.allow = AclAction('allow')
+AclAction.deny  = AclAction('deny')
+
+class DomainNameServers(ListWrapper):
+    pass
+DomainNameServers.aws_provided_dns = DomainNameServers(['AwsProvidedDns'])
 
 class CustomerGateway(Resource):
     resource_type = 'AWS::EC2::CustomerGateway'
@@ -42,7 +45,8 @@ class DHCPOptions(Resource):
     @staticmethod
     def props():
         return [prop('DomainName', DomainName),
-                prop('DomainNameServers', DomainNameServers, default=aws_provided_dns),
+                prop('DomainNameServers', DomainNameServers,
+                     default=DomainNameServers.aws_provided_dns),
                 prop('NetbiosNameServers'),
                 prop('NetbiosNodeType'),
                 prop('NtpServers'),
@@ -114,8 +118,8 @@ class InternetGateway(Resource):
         sarg_types = super(InternetGateway, self).arg_types()
         return sarg_types + [VPC]
 
-    def __siblings__(self):
-        siblings = super(InternetGateway, self).__siblings__()
+    def siblings(self):
+        siblings = super(InternetGateway, self).siblings()
         siblings += self._vpc_attachment()
         return siblings
 
@@ -145,16 +149,32 @@ class NetworkAcl(Resource):
     def entry(self, *args, **kwargs):
         result = copy(self)
         kwargs['network_acl_id'] = self
-        result.siblings.append(network_acl_entry(*args, **kwargs))
+        result._siblings.append(network_acl_entry(*args, **kwargs))
         return result
 
     def ingress(self, *args, **kwargs):
         kwargs['egress'] = False
         return self.entry(*args, **kwargs)
 
+    def allow_ingress(self, *args, **kwargs):
+        kwargs['rule_action'] = AclAction.allow
+        return self.ingress(*args, **kwargs)
+
+    def deny_ingress(self, *args, **kwargs):
+        kwargs['rule_action'] = AclAction.deny
+        return self.ingress(*args, **kwargs)
+
     def egress(self, *args, **kwargs):
         kwargs['egress'] = True
         return self.entry(*args, **kwargs)
+
+    def allow_egress(self, *args, **kwargs):
+        kwargs['rule_action'] = AclAction.allow
+        return self.egress(*args, **kwargs)
+
+    def deny_egress(self, *args, **kwargs):
+        kwargs['rule_action'] = AclAction.deny
+        return self.egress(*args, **kwargs)
 
 class NetworkAclEntry(Resource):
     resource_type = 'AWS::EC2::NetworkAclEntry'
@@ -226,8 +246,8 @@ class RouteTable(Resource):
         sarg_types = super(RouteTable, self).arg_types()
         return sarg_types + [Subnet]
 
-    def __siblings__(self):
-        siblings = super(RouteTable, self).__siblings__()
+    def siblings(self):
+        siblings = super(RouteTable, self).siblings()
         siblings += self._subnet_siblings()
         return siblings
 
@@ -250,7 +270,7 @@ class RouteTable(Resource):
     def route(self, *args, **kwargs):
         result = copy(self)
         kwargs['route_table_id'] = self
-        result.siblings.append(Route(*args, **kwargs))
+        result._siblings.append(Route(*args, **kwargs))
         return result
 
 class SecurityGroup(Resource):
@@ -388,8 +408,8 @@ class VPC(Resource):
         sarg_types = super(VPC, self).arg_types()
         return sarg_types + [DHCPOptions]
 
-    def __siblings__(self):
-        siblings = super(VPC, self).__siblings__()
+    def siblings(self):
+        siblings = super(VPC, self).siblings()
         siblings += self._dhcp_options_association()
         return siblings
 
@@ -438,16 +458,22 @@ class VPCPeeringConnection(Resource):
 # TODO: Add VPN* resource types
 
 #### Public API ####
-
 # Generate functional snake_cased form of constructors for public API
 def __is_resource(obj):
     return issubclass(type(obj), type) and issubclass(obj, Resource)
 constructors = {snake_case(name): obj for (name, obj) in globals().items() if __is_resource(obj)}
 globals().update(constructors)
 
+acl_action = AclAction
+allow      = AclAction.allow
+deny       = AclAction.deny
+domain_name_servers = DomainNameServers
+aws_provided_dns    = DomainNameServers.aws_provided_dns
+
 def vpc_with_dns(*args, **kwargs):
     kwargs['enable_dns_support'] = True
     kwargs['enable_dns_hostnames'] = True
     return vpc(*args, **kwargs)
 
-__all__ = sorted(['vpc_with_dns'] + constructors.keys())
+__all__ = sorted(['acl_action', 'allow', 'deny', 'domain_name_servers', 'aws_provided_dns', 'vpc_with_dns'] + \
+                 constructors.keys())

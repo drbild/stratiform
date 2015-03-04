@@ -21,19 +21,18 @@ from stratiform.common import AWSObject, prop
 from stratiform.parameters import Parameter
 from stratiform.mappings   import Mapping
 from stratiform.conditions import Condition
-from stratiform.resources  import Resource, siblings
+from stratiform.resources  import Resource
 from stratiform.outputs    import Output
 
 class Version(Wrapper):
     pass
-
-DEFAULT_VERSION = Version("2010-09-09")
+Version.DEFAULT = Version("2010-09-09")
 
 class Template(AWSObject):
     @staticmethod
     def props():
         return [prop('Description', basestring),
-                prop('AWSTemplateFormatVersion', Version, default=DEFAULT_VERSION),
+                prop('AWSTemplateFormatVersion', Version, default=Version.DEFAULT),
                 prop('Parameters', odict),
                 prop('Mappings',   odict),
                 prop('Conditions', odict),
@@ -67,11 +66,7 @@ class Template(AWSObject):
         for item in items:
             coll = self.__collection_for(item)
             coll[item.name] = item
-            self.__add_siblings(item)
-
-    def __add_siblings(self, item):
-        if hasattr(item, 'siblings'):
-            self.__add(*item.siblings)
+            self.__add(*item.siblings())
 
     def __collection_for(self, item):
         if isinstance(item, Parameter):

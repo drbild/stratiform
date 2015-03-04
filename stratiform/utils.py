@@ -39,7 +39,7 @@ class Wrapper(object):
     def __json__(self):
         return self.wrapped
 
-class ListWrapper(object):
+class ListWrapper(Wrapper):
     """Base class for wrapping a list of objects. This is used to refine
     the type of the list, while proxying the __str__() and
     __json__() through to the wrapped list.
@@ -54,6 +54,7 @@ class ListWrapper(object):
             wrapped += args
         else:
             wrapped = args
+        super(ListWrapper, self).__init__(wrapped)
 
 def class_name(obj):
     """Returns the class name of the specified object.

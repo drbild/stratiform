@@ -88,7 +88,7 @@ class Instance(Resource):
                 prop('Monitoring'),
                 prop('NetworkInterfaces'),
                 prop('PlacementGroupName'),
-                prop('PrivateIpAdress', IpAddress),
+                prop('PrivateIpAddress', IpAddress),
                 prop('RamdiskId'),
                 prop('SecurityGroupIds'),
                 prop('SecurityGroups'),

@@ -79,7 +79,7 @@ PortRange.rdp   = PortRange(3389)
 az              = availability_zone = AvailabilityZone
 
 address         = IpAddress
-ip_localhost    = IpAdress.localhost
+ip_localhost    = IpAddress.localhost
 
 cidr            = CIDR
 cidr_all        = CIDR.all

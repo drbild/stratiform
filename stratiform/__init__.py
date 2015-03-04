@@ -23,6 +23,5 @@ from stratiform.mappings import *
 from stratiform.resources import *
 from stratiform.outputs import *
 
-from stratiform.constants import *
+from stratiform.common import *
 from stratiform.functions import *
-from stratiform.types import *

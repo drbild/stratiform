@@ -16,34 +16,17 @@ import json, re
 
 from collections import OrderedDict as odict
 from copy import copy
-from functools import partial
 
-from stratiform.copyutils import super_copy
+from stratiform.utils import class_name, identity, snake_case, super_copy
 from stratiform.dispatchers import typed_dispatch
 
 #from stratiform.types import *
-
-def class_name(obj):
-    return obj.__class__.__name__
 
 def named_as_ref(obj):
     if isinstance(obj, NameableAWSObject) and hasattr(obj, 'name'):
         return Ref(obj)
     else:
         return obj
-
-def snake_case(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, '__json__'):
-            return obj.__json__()
-        return super(JSONEncoder, self).default(obj)
-
-def identity(self):
-    return self
 
 def unique_attr(seq, attr):
     """Filters out objects with a duplicate attribute value

@@ -15,11 +15,29 @@
 from stratiform.common import NameableAWSObject
 from stratiform.common import prop
 
+from stratiform.utils import Wrapper
+
 class Parameter(NameableAWSObject):
+
+    class Type(Wrapper):
+        pass
+
+    Type.String             = Type('String')
+    Type.Number             = Type('Number')
+    Type.ListNumber         = Type('List<Number>')
+    Type.CommaDelimitedList = Type('CommaDelimitedList')
+    Type.KeyPair            = Type('AWS::EC2::KeyPair::KeyName')
+    Type.SecurityGroup      = Type('AWS::EC2::SecurityGroup::Id')
+    Type.Subnet             = Type('AWS::EC2::Subnet::Id')
+    Type.Vpc                = Type('AWS::EC2::VPC::Id')
+    Type.ListSecurityGroup  = Type('List<AWS::EC2::SecurityGroup::Id>')
+    Type.ListSubnet         = Type('LIst<AWS::EC2::Subnet::Id>')
+    Type.ListVpc            = Type('List<AWS::EC2::VPC::Id>')
+
     @staticmethod
     def props():
-        return [prop('Type', basestring),
-                prop('Description'),
+        return [prop('Type', Parameter.Type),
+                prop('Description', basestring),
                 prop('Default'),
                 prop('AllowedValues'),
                 prop('AllowedPattern'),
@@ -30,6 +48,11 @@ class Parameter(NameableAWSObject):
                 prop('MinValue'),
                 prop('NoEcho')]
 
+def bind_type(type):
+    def f(*args, **kwargs):
+        return Parameter(*args, type=type, **kwargs)
+    return f
+
 class PseudoParameter(NameableAWSObject):
     @staticmethod
     def props():
@@ -38,12 +61,31 @@ class PseudoParameter(NameableAWSObject):
 #### Public API ####
 parameter = Parameter
 
-ACCOUNT_ID        = PseudoParameter('AWS::AccountId')
-NOTIFICATION_ARNS = PseudoParameter('AWS::NotificationARNs')
-NO_VALUE          = PseudoParameter('AWS::NoValue')
-REGION            = PseudoParameter('AWS::Region')
-STACK_ID          = PseudoParameter('AWS::StackId')
-STACK_NAME        = PseudoParameter('AWS::StackName')
+string_parameter               = bind_type(Parameter.Type.String)
+number_parameter               = bind_type(Parameter.Type.Number)
+list_number_parameter          = bind_type(Parameter.Type.ListNumber)
+comma_delimited_list_parameter = bind_type(Parameter.Type.CommaDelimitedList)
+key_pair_parameter             = bind_type(Parameter.Type.KeyPair)
+security_group_parameter       = bind_type(Parameter.Type.SecurityGroup)
+subnet_parameter               = bind_type(Parameter.Type.Subnet)
+vpc_parameter                  = bind_type(Parameter.Type.Vpc)
+list_security_group_parameter  = bind_type(Parameter.Type.ListSecurityGroup)
+list_subnet_parameter          = bind_type(Parameter.Type.ListSubnet)
+list_vpc_parameter             = bind_type(Parameter.Type.ListVpc)
 
-__all__ = ['parameter', 'ACCOUNT_ID', 'NOTIFICATION_ARNS', 'NO_VALUE',
-           'REGION', 'STACK_ID', 'STACK_NAME']
+AccountId        = PseudoParameter('AWS::AccountId')
+NotificationArns = PseudoParameter('AWS::NotificationARNs')
+NoValue          = PseudoParameter('AWS::NoValue')
+Region           = PseudoParameter('AWS::Region')
+StackId          = PseudoParameter('AWS::StackId')
+StackName        = PseudoParameter('AWS::StackName')
+
+__all__ = ['parameter'] + \
+          ['string_parameter', 'number_parameter',
+           'list_number_parameter', 'comma_delimited_list_parameter',
+           'key_pair_parameter', 'security_group_parameter',
+           'subnet_parameter', 'vpc_parameter',
+           'list_security_group_parameter', 'list_subnet_parameter',
+           'list_vpc_parameter'] + \
+          ['AccountId', 'NotificationArns', 'NoValue', 'Region',
+           'StackId', 'StackName']

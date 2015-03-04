@@ -15,10 +15,10 @@
 from collections import OrderedDict as odict
 
 from copy import copy
-from stratiform.copyutils import super_copy
+
+from stratiform.utils import class_name, super_copy
 
 from stratiform.common import AWSObject, NameableAWSObject
-from stratiform.common import class_name
 from stratiform.common import prop, required_prop as req_prop
 
 def merge(*seqs):

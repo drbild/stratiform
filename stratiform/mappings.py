@@ -12,16 +12,26 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.common import NameableAWSObject, prop
+from stratiform.dispatchers import typed_dispatch
 
-class Output(NameableAWSObject):
+class Mapping(object):
+    @typed_dispatch
+    def __init__(self, name, mapping):
+        self.name    = name
+        self.mapping = mapping
+
     @staticmethod
-    def props():
-        return [prop('Value', NameableAWSObject),
-                prop('Description', basestring),
-                prop('Condition')]
+    def arg_names():
+        return ('name', 'mapping')
+
+    @staticmethod
+    def arg_types():
+        return (basestring, dict)
+
+    def __json__(self):
+        return {self.name : self.mapping}
 
 #### Public API ####
-output = Output
+mapping = Mapping
 
-__all__ = ['output']
+__all__ = ['mapping']

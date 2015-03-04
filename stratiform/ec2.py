@@ -14,9 +14,10 @@
 
 from copy import copy
 
-from stratiform.common import snake_case, NameableAWSObject
-from stratiform.copyutils import super_copy
+from stratiform.utils import Wrapper
+from stratiform.utils import snake_case, super_copy
 
+from stratiform.common import NameableAWSObject
 from stratiform.constants import aws_provided_dns
 from stratiform.types import *
 
@@ -359,7 +360,7 @@ class VolumeAttachment(Resource):
 class VPC(Resource):
     resource_type = 'AWS::EC2::VPC'
 
-    class Tenancy(Wrap):
+    class Tenancy(Wrapper):
         pass
     Tenancy.DEFAULT   = Tenancy('default')
     Tenancy.DEDICATED = Tenancy('dedicated')

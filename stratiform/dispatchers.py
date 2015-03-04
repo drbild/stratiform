@@ -14,6 +14,8 @@
 
 import wrapt
 
+from stratiform.utils import class_name
+
 @wrapt.decorator
 def named_args(func, self, args, kwargs):
     """A decorator that converts positional args to keyword args before
@@ -45,7 +47,7 @@ def typed_dispatch(func, self, args, kwargs):
     names = self.arg_names()
     if len(types) != len(names):
         msg = "%s must declare same number of types (%d given) and names (%d given) for dispatch"
-        raise TypeError(msg%(self.__class__.__name__, len(types), len(names)))
+        raise TypeError(msg%(class_name(self), len(types), len(names)))
     if len(args) > len(types):
         msg = "%s() takes at most %d arguments(s) (%d given)"
         raise TypeError(msg%(func.__name__, len(types), len(args)))

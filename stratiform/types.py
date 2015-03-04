@@ -14,40 +14,22 @@
 
 import re
 
+from stratiform.utils import Wrapper, ListWrapper
 from stratiform.common import AWSObject, prop
 
-class Wrap(object):
-    def __init__(self, wrap):
-        self.wrap = wrap
-
-    def __str__(self):
-        return str(self.wrap)
-
-    def __json__(self):
-        return self.wrap
-
-class WrapList(object):
-    def __init__(self, *args):
-        wrap = []
-        if len(args) == 1 and isinstance(wrap, list):
-            wrap += args
-        else:
-            wrap = args
-        super(WrapList, self).__init__(wrap)
-
-class Version(Wrap):
+class Version(Wrapper):
     pass
 
-class BgpAsn(Wrap):
+class BgpAsn(Wrapper):
     pass
 
-class CIDR(Wrap):
+class CIDR(Wrapper):
     pass
 
-class IpProtocol(Wrap):
+class IpProtocol(Wrapper):
     pass
 
-class IpAddress(Wrap):
+class IpAddress(Wrapper):
     pass
 
 class PortRange(AWSObject):
@@ -69,19 +51,19 @@ class PortRange(AWSObject):
     def to_port(self):
         return self.to_port
 
-class AclAction(Wrap):
+class AclAction(Wrapper):
     pass
 
-class DomainName(Wrap):
+class DomainName(Wrapper):
     pass
 
-class DomainNameServers(WrapList):
+class DomainNameServers(ListWrapper):
     pass
 
-class VPCConnectionType(Wrap):
+class VPCConnectionType(Wrapper):
     pass
 
-class AvailabilityZone(Wrap):
+class AvailabilityZone(Wrapper):
     pass
 
 version = Version

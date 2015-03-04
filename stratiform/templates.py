@@ -14,12 +14,13 @@
 
 import json
 from collections import OrderedDict as odict
-
 from copy import copy
-from stratiform.copyutils import super_copy, shallow_copy_attr
 
-from stratiform.common import class_name, prop
-from stratiform.common import AWSObject, JSONEncoder
+from stratiform.utils import JSONEncoder
+from stratiform.utils import class_name, camel_case, super_copy, shallow_copy_attr
+
+from stratiform.common import prop
+from stratiform.common import AWSObject
 
 from stratiform.types import *
 
@@ -51,6 +52,18 @@ class Template(AWSObject):
         self._ensure_odict_if_present('conditions')
         self._ensure_odict_if_present('resources')
         self._ensure_odict_if_present('outputs')
+
+    def namespace(self, namespace):
+        result = copy(self)
+        result.namespace = namespace
+        return result
+
+    def add_with_ns(self, **kwargs):
+        result = self
+        for name, obj in kwargs.iteritems():
+            result = result.add(obj, camel_case(name))
+            result.namespace[name] = obj
+        return result
 
     def _ensure_odict_if_present(self, attr):
         """If the specified attribute is present, converts it to an

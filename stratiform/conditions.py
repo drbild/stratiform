@@ -12,16 +12,27 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from stratiform.common import NameableAWSObject, prop
+from stratiform.dispatchers import typed_dispatch
+from stratiform.functions import ConditionFn
 
-class Output(NameableAWSObject):
+class Condition(object):
+    @typed_dispatch
+    def __init__(self, name, func):
+        self.name = name
+        self.func = func
+
     @staticmethod
-    def props():
-        return [prop('Value', NameableAWSObject),
-                prop('Description', basestring),
-                prop('Condition')]
+    def arg_names():
+        return ('name', 'func')
+
+    @staticmethod
+    def arg_types():
+        return (basestring, ConditionFn)
+
+    def __json__(self):
+        return {self.name : self.func}
 
 #### Public API ####
-output = Output
+condition = Condition
 
-__all__ = ['output']
+__all__ = ['condition']

@@ -66,6 +66,7 @@ class VPCConnectionType(Wrapper):
 class AvailabilityZone(Wrapper):
     pass
 
+#### Public API ####
 version = Version
 cidr = CIDR
 protocol = ip_protocol = IpProtocol
@@ -74,3 +75,7 @@ acl_action = AclAction
 domain_name = DomainName
 domain_name_servers = DomainNameServers
 availability_zone = AvailabilityZone
+
+__all__ = ['version', 'cidr', 'protocol', 'ip_protocol', 'port' ,
+           'ports', 'port_range', 'acl_action', 'domain_name',
+           'domain_name_servers', 'availability_zone']

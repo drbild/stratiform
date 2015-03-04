@@ -21,7 +21,7 @@ from stratiform.common import NameableAWSObject
 from stratiform.constants import aws_provided_dns
 from stratiform.types import *
 
-from stratiform.common import prop, required_prop as req_prop, optional_prop as opt_prop
+from stratiform.common import prop
 from stratiform.resources import Resource, Tags
 
 class CustomerGateway(Resource):

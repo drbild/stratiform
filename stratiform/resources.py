@@ -19,7 +19,7 @@ from copy import copy
 from stratiform.utils import class_name, super_copy
 
 from stratiform.common import AWSObject, NameableAWSObject
-from stratiform.common import prop, required_prop as req_prop
+from stratiform.common import prop
 
 def merge(*seqs):
     return [item for seq in seqs for item in seq]

@@ -150,9 +150,6 @@ class Ref(AWSObject):
 
 #### Public API ####
 ref  = Ref
-
 prop = Property
-required_prop = Property
-optional_prop = Property
 
-__all__ = ['ref', 'prop', 'required_prop', 'optional_prop']
+__all__ = ['ref', 'prop']

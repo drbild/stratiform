@@ -14,12 +14,13 @@
 
 from copy import copy
 
-from stratiform.base import NameableAWSObject, prop
+from stratiform.base import AWSObject, prop
 from stratiform.common import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
 from stratiform.utils import Wrapper, ListWrapper, snake_case, super_copy
 
 from stratiform.resources import Resource, Tags
 
+################################ Custom Types ################################
 class AclAction(Wrapper):
     pass
 AclAction.allow = AclAction('allow')
@@ -29,9 +30,84 @@ class DomainNameServers(ListWrapper):
     pass
 DomainNameServers.aws_provided_dns = DomainNameServers(['AwsProvidedDns'])
 
+################################ AWS Property Types ################################
+class ICMPProperty(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('Code', int),
+                prop('Type', int)]
+
+class MountPoint(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('Device', basestring),
+                prop('VolumeId', Volume)]
+
+class NetworkInterfaceProperty(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('AssociatePublicIpAddress'),
+                prop('DeleteOnTermination'),
+                prop('Description'),
+                prop('DeviceIndex'),
+                prop('GroupSet'),
+                prop('NetworkInterfaceId'),
+                prop('PrivateIpAddress', IpAddress),
+                prop('PrivateIpAddresses'),
+                prop('SecondaryPrivateIpAddressCount'),
+                prop('SubnetId', Subnet)]
+
+class NetworkInterfaceAssociation(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('AttachmentId', NetworkInterfaceAttachment),
+                prop('InstanceId', Instance),
+                prop('PublicIp', IpAddress),
+                prop('IpOwnerId')]
+
+class NetworkInterfaceAttachmentProperty(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('AttachmentId', NetworkInterfaceAttachment),
+                prop('InstanceId', Instance)]
+
+class NetworkInterfaceGroupItem(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('GroupId'),
+                prop('GroupName')]
+
+class NetworkInterfacePrivateIpSpecification(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('PrivateIpAddress'),
+                prop('Primary')]
+
+class SecurityGroupRuleIngress(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('CidrIp', CIDR),
+                prop('FromPort', PortRange, 'port_range', PortRange.from_port),
+                prop('ToPort', PortRange, 'port_range', PortRange.to_port),
+                prop('IpProtocol', IpProtocol),
+                prop('SourceSecurityGroupId', SecurityGroup),
+                prop('SourceSecurityGroupName'),
+                prop('SourceSecurityGroupOwnerId')]
+
+class SecurityGroupRuleEgress(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('CidrIp', CIDR),
+                prop('FromPort', PortRange, 'port_range', PortRange.from_port),
+                prop('ToPort', PortRange, 'port_range', PortRange.to_port),
+                prop('IpProtocol', IpProtocol),
+                prop('DestinationSecurityGroupId', SecurityGroup)]
+
+################################ AWS Resource Types ################################
 class CustomerGateway(Resource):
     resource_type = 'AWS::EC2::CustomerGateway'
 
+    @staticmethod
     def props():
         return [prop('BgpAsn'),
                 prop('IpAddress', IpAddress),
@@ -182,7 +258,7 @@ class NetworkAclEntry(Resource):
     def props():
         return [prop('CidrBlock', CIDR),
                 prop('Egress', bool),
-                prop('Icmp'),
+                prop('Icmp', ICMPProperty),
                 prop('NetworkAclId', NetworkAcl),
                 prop('PortRange', PortRange),
                 prop('Protocol', IpProtocol),
@@ -496,11 +572,22 @@ def __is_resource(obj):
 constructors = {snake_case(name): obj for (name, obj) in globals().items() if __is_resource(obj)}
 globals().update(constructors)
 
-acl_action = AclAction
-allow      = AclAction.allow
-deny       = AclAction.deny
+acl_action          = AclAction
+allow               = AclAction.allow
+deny                = AclAction.deny
 domain_name_servers = DomainNameServers
 aws_provided_dns    = DomainNameServers.aws_provided_dns
+
+icmp_property                              = ICMPProperty
+mount_point                                = MountPoint
+network_interface_property                 = NetworkInterfaceProperty
+network_interface_association              = NetworkInterfaceAssociation
+network_interface_attachment_property      = NetworkInterfaceAttachmentProperty
+network_interface_group_item               = NetworkInterfaceGroupItem
+network_interface_private_ip_specification = NetworkInterfacePrivateIpSpecification
+port_range                                 = PortRange
+security_group_rule_ingress                = SecurityGroupRuleIngress
+security_group_rule_egress                 = SecurityGroupRuleEgress
 
 def vpc_with_dns(*args, **kwargs):
     """Creates a VPC resource with enable_dns_support and
@@ -511,5 +598,14 @@ def vpc_with_dns(*args, **kwargs):
     kwargs['enable_dns_hostnames'] = True
     return vpc(*args, **kwargs)
 
-__all__ = sorted(['acl_action', 'allow', 'deny', 'domain_name_servers', 'aws_provided_dns', 'vpc_with_dns'] + \
+__all__ = sorted(['acl_action', 'allow', 'deny',
+                  'domain_name_servers', 'aws_provided_dns',
+                  'vpc_with_dns', 'icmp_property', 'mount_point',
+                  'network_interface_property',
+                  'network_interface_association',
+                  'network_interface_attachment_property',
+                  'network_interface_group_item',
+                  'network_interface_private_ip_specification',
+                  'port_range', 'security_group_rule_ingress',
+                  'security_group_rule_egress'] + \
                  constructors.keys())

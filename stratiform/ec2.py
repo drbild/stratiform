@@ -454,7 +454,40 @@ class VPCPeeringConnection(Resource):
                 prop('VpcId'),
                 prop('Tags', Tags)]
 
-# TODO: Add VPN* resource types
+class VPNConnection(Resource):
+    resource_type = 'AWS::EC2::VPNConnection'
+    
+    @staticmethod
+    def props():
+        return [prop('Type'),
+                prop('CustomerGatewayId', CustomerGateway),
+                prop('StaticRoutesOnly'),
+                prop('Tags', Tags),
+                prop('VpnGatewayId', VPNGateway)]
+
+class VPNConnectionRoute(Resource):
+    resource_type = 'AWS::EC2::VPNConnectionRoute'
+    
+    @staticmethod
+    def props():
+        return [prop('DestinationCidrBlock', CIDR),
+                prop('VPnConnectionId', VPNConnection)]
+
+class VPNGateway(Resource):
+    resource_type = 'AWS::EC2::VPNGateway'
+    
+    @staticmethod
+    def props():
+        return [prop('Type'),
+                prop('Tags', Tags)]
+
+class VPNGatewayRoutePropagation(Resource):
+    resource_type = 'AWS::EC2::VPNGatewayRoutePropagation'
+    
+    @staticmethod
+    def props():
+        return [prop('RouteTableIds'),
+                prop('VpnGatewayId', VPNGateway)]
 
 #### Public API ####
 # Generate functional snake_cased form of constructors for public API
@@ -470,6 +503,10 @@ domain_name_servers = DomainNameServers
 aws_provided_dns    = DomainNameServers.aws_provided_dns
 
 def vpc_with_dns(*args, **kwargs):
+    """Creates a VPC resource with enable_dns_support and
+    enable_dns_hostnames both set to True.
+
+    """
     kwargs['enable_dns_support'] = True
     kwargs['enable_dns_hostnames'] = True
     return vpc(*args, **kwargs)

@@ -12,13 +12,9 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from copy import copy
-
 from stratiform.base import AWSObject, prop
-from stratiform.common import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
-from stratiform.utils import Wrapper, ListWrapper, snake_case, super_copy
-
-from stratiform.resources import Resource, Tags
+from stratiform.utils import Wrapper, snake_case
+from stratiform.resources import Resource
 
 ################################ Custom Types ################################
 class KeyStatus(Wrapper):

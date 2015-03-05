@@ -15,6 +15,12 @@
 from stratiform.dispatchers import typed_dispatch
 from stratiform.functions import ConditionFn
 
+def named_as_cond(obj):
+    if isinstance(obj, Condition) and hasattr(obj, 'name'):
+        return {'Condition' : obj.name}
+    else:
+        return obj
+
 class Condition(object):
     @typed_dispatch
     def __init__(self, name, func):

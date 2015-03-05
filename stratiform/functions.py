@@ -14,6 +14,9 @@
 
 from stratiform.base import named_as_ref
 
+# Circular import
+import stratiform.conditions
+
 class Fn(object):
     """Base class for AWS intrinsic functions
     """
@@ -103,6 +106,9 @@ class ConditionFn(Fn):
     """
     pass
 
+def nacor(obj):
+    return stratiform.conditions.named_as_cond(named_as_ref(obj))
+
 class And(ConditionFn):
     """Returns true if all the specified conditions evaluate to true, or
     returns false if any one of the conditions evaluates to true.
@@ -112,7 +118,7 @@ class And(ConditionFn):
         self.conditions = conditions
 
     def __json__(self):
-        params = [named_as_ref(c) for c in self.conditions]
+        params = [nacor(c) for c in self.conditions]
         return {'Fn::And' : params}
 
 class Equals(ConditionFn):
@@ -138,7 +144,11 @@ class If(ConditionFn):
         self.false_value = false_value
 
     def __json__(self):
-        params = [self.condition.name,
+        if hasattr(condition, 'name'):
+            name = condition.name
+        else:
+            name = name
+        params = [name,
                   named_as_ref(self.true_value),
                   named_as_ref(self.false_value)]
         return {'Fn::If' : params}
@@ -152,7 +162,7 @@ class Not(ConditionFn):
         self.condition = condition
 
     def __json__(self):
-        return {'Fn::Not' : named_as_ref(self.condition)}
+        return {'Fn::Not' : nacor(self.condition)}
 
 class Or(ConditionFn):
     """Returns true if any one of the specified conditions evalutes to
@@ -163,7 +173,7 @@ class Or(ConditionFn):
         self.conditions = conditions
 
     def __json__(self):
-        params = [named_as_ref(c) for c in self.conditions]
+        params = [nacor(c) for c in self.conditions]
         return {'Fn::Or' : params}
 
 #### Public API ####

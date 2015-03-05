@@ -25,12 +25,12 @@ def named_args(func, self, args, kwargs):
     """
     names = self.__named_args__()
     if len(args) > len(names):
-        err_msg = "%s() takes at most %d argument(s) (%d given)"
-        raise TypeError(err_msg%(func.__name__, len(names), len(args)))
+        msg = "%s() takes at most %d argument(s) (%d given)"
+        raise TypeError(msg%(func.__name__, len(names), len(args)))
     for k, v in zip(names, args):
         if k in kwargs:
-            err_msg = "%s() got multiple values for keyword argument '%s'"
-            raise TypeError(err_msg%(func.__name__, k))
+            msg = "%s() got multiple values for keyword argument '%s'"
+            raise TypeError(msg%(func.__name__, k))
         kwargs[k] = v
     return func(**kwargs)
 
@@ -60,10 +60,11 @@ def typed_dispatch(func, self, args, kwargs):
                     msg = "%s() got ambigious argument. Matches both '%s' and '%s'"
                     raise TypeError(msg%(func.__name__, found_key, k))
                 if k in kwargs:
-                    err_msg = "%s() got multiple values for keyword argument '%s'"
-                    raise TypeError(err_msg%(func.__name__, k))
+                    msg = "%s() got multiple values for keyword argument '%s'"
+                    raise TypeError(msg%(func.__name__, k))
                 found_key = k
                 kwargs[k] = v
         if found_key == None:
-            posargs.append(v)
+            msg = "%s.%s() got argument of unexpected type '%s'"
+            raise TypeError(msg%(class_name(func.im_self),func.__name__, type(v)))
     return func(*posargs, **kwargs)

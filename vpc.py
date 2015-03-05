@@ -21,9 +21,11 @@ tags_base = tags(Environment=deployment, Stack=StackName)
 tags_public = tags_base + tag(Network="public")
 tags_public_named = tags_public + tag(Name=fn.join('-', [StackName, 'public']))
 
+cond = condition('InProd', fn.fn_equals(deployment, 'prod'))
+
 # Resources
 dhcp_options     = ec2.dhcp_options("DHCPOptions", tags_base + tag(Name=StackName), domain_name=domain_name)
-vpc              = ec2.vpc_with_dns("VPC", cidr_vpc, dhcp_options, tags_base + tag(Name=StackName))
+vpc              = ec2.vpc_with_dns("VPC", cidr_vpc, dhcp_options, tags_base + tag(Name=StackName), cond)
 
 internet_gateway   = ec2.internet_gateway("InternetGateway", vpc, tags_public_named)
 public_subnet      = ec2.subnet("PublicSubnet", vpc, zone, cidr_public, tags_public_named)
@@ -47,6 +49,7 @@ public_route_table_id = output("PublicRouteTableId", public_route_table)
 t = template("VPC stack for bigsky docker registry")
 t = t.add(deployment,
           domain_name,
+          cond,
           vpc,
           dhcp_options,
           internet_gateway,

@@ -16,20 +16,24 @@ from copy import copy
 from collections import OrderedDict as odict
 
 from stratiform.base import AWSObject, NameableAWSObject, prop
+from stratiform.conditions import Condition, Conditionable
 from stratiform.utils import class_name, super_copy
 
 def merge(*seqs):
     return [item for seq in seqs for item in seq]
 
-class Resource(NameableAWSObject):
+class Resource(Conditionable, NameableAWSObject):
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
 
     def __json__(self):
-        return odict([
+        data = odict([
             ('Type', self.resource_type),
             ('Properties', super(Resource, self).__json__())
         ])
+        if hasattr(self, 'condition'):
+            data['Condition'] = self.condition.name
+        return data
 
 class Tag(AWSObject):
     @staticmethod
@@ -38,9 +42,6 @@ class Tag(AWSObject):
                 prop('Value')]
 
     def __repr__(self):
-        print ''
-        print self.__dict__.keys()
-        print ''
         return "Tag(%s='%s')"%(self.key, self.value)
 
 class Tags(object):

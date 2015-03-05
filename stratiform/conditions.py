@@ -29,8 +29,28 @@ class Condition(object):
     def arg_types():
         return (basestring, ConditionFn)
 
+    def siblings(self):
+        return []
+
     def __json__(self):
-        return {self.name : self.func}
+        return self.func
+
+class Conditionable(object):
+    """Mixin for AWSObject types that can accept a condition parameter.
+
+    """
+    def __attrs__(self):
+        sattrs = super(Conditionable, self).__attrs__()
+        return sattrs + ['condition']
+
+    def arg_names(self):
+        snames = super(Conditionable, self).arg_names()
+        return snames + ['condition']
+
+    def arg_types(self):
+        stypes = super(Conditionable, self).arg_types()
+        return stypes + [Condition]
+
 
 #### Public API ####
 condition = Condition

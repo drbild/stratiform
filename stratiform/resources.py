@@ -29,10 +29,9 @@ class Resource(Conditionable, NameableAWSObject):
     def __json__(self):
         data = odict([
             ('Type', self.resource_type),
-            ('Properties', super(Resource, self).__json__())
+            ('Properties', NameableAWSObject.__json__(self))
         ])
-        if hasattr(self, 'condition'):
-            data['Condition'] = self.condition.name
+        data.update(Conditionable.__json__(self))
         return data
 
 class Tag(AWSObject):

@@ -51,6 +51,11 @@ class Conditionable(object):
         stypes = super(Conditionable, self).arg_types()
         return stypes + [Condition]
 
+    def __json__(self):
+        if hasattr(self, 'condition'):
+            return {'Condition' : self.condition.name}
+        else:
+            return {}
 
 #### Public API ####
 condition = Condition

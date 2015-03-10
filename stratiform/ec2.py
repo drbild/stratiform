@@ -355,8 +355,8 @@ class SecurityGroup(Resource):
     def props():
         return [prop('VpcId', VPC),
                 prop('GroupDescription', basestring),
-                prop('SecurityGroupEgress'),
-                prop('SecurityGroupIngress'),
+                prop('SecurityGroupEgress', default=[]),
+                prop('SecurityGroupIngress', default=[]),
                 prop('Tags', Tags)]
 
     def __init__(self, *args, **kwargs):

@@ -353,31 +353,30 @@ class SecurityGroup(Resource):
 
     @staticmethod
     def props():
-        return [prop('VpcId', Vpc),
-                prop('GroupDescription'),
+        return [prop('VpcId', VPC),
+                prop('GroupDescription', basestring),
                 prop('SecurityGroupEgress'),
                 prop('SecurityGroupIngress'),
                 prop('Tags', Tags)]
 
     def __init__(self, *args, **kwargs):
         super(SecurityGroup, self).__init__(*args, **kwargs)
-        self.rules = []
 
-    def __copy__(self):
-        result = super_copy(NetworkAcl, self)
-        result = copy(result.rules)
+        result = copy(self)
+        kwargs['network_acl_id'] = self
+        result._siblings.append(network_acl_entry(*args, **kwargs))
         return result
 
     def egress(self, *args, **kwargs):
         result = copy(self)
         kwargs['group_id'] = self
-        result.rules.append(security_group_egress(*args, **kwargs))
+        result._siblings.append(security_group_egress(*args, **kwargs))
         return result
 
     def ingress(self, *args, **kwargs):
         result = copy(self)
         kwargs['group_id'] = self
-        result.rules.append(security_group_ingress(*args, **kwargs))
+        result._siblings.append(security_group_ingress(*args, **kwargs))
         return result
 
 class SecurityGroupEgress(Resource):

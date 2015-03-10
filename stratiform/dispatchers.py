@@ -49,8 +49,8 @@ def typed_dispatch(func, self, args, kwargs):
         msg = "%s must declare same number of types (%d given) and names (%d given) for dispatch"
         raise TypeError(msg%(class_name(self), len(types), len(names)))
     if len(args) > len(types):
-        msg = "%s() takes at most %d arguments(s) (%d given)"
-        raise TypeError(msg%(func.__name__, len(types), len(args)))
+        msg = "%s.%s() takes at most %d arguments(s) (%d given)"
+        raise TypeError(msg%(class_name(func.im_self), func.__name__, len(types), len(args)))
     posargs = []
     for v in args:
         found_key = None
@@ -66,5 +66,5 @@ def typed_dispatch(func, self, args, kwargs):
                 kwargs[k] = v
         if found_key == None:
             msg = "%s.%s() got argument of unexpected type '%s'"
-            raise TypeError(msg%(class_name(func.im_self),func.__name__, type(v)))
+            raise TypeError(msg%(class_name(func.im_self), func.__name__, class_name(v)))
     return func(*posargs, **kwargs)

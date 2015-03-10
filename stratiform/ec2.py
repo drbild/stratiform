@@ -28,7 +28,7 @@ AclAction.deny  = AclAction('deny')
 
 class DomainNameServers(ListWrapper):
     pass
-DomainNameServers.aws_provided_dns = DomainNameServers(['AwsProvidedDns'])
+DomainNameServers.aws_provided_dns = DomainNameServers(['AmazonProvidedDns'])
 
 class ImageId(Wrapper):
     pass
@@ -212,7 +212,7 @@ class InternetGateway(Resource):
     def _vpc_attachment(self):
         if not hasattr(self, 'vpc'):
             return []
-        attachment_name = ''.join([self.name, self._vpc.name, "Attachment"])
+        attachment_name = ''.join([self.object_name, self._vpc.object_name, "Attachment"])
         attachment = VPCGatewayAttachment(attachment_name, self._vpc, self)
         return [attachment]
 
@@ -340,7 +340,7 @@ class RouteTable(Resource):
     def _subnet_siblings(self):
         if not hasattr(self, 'subnet'):
             return []
-        association_name = ''.join([self._subnet.name, self.name, "Association"])
+        association_name = ''.join([self._subnet.object_name, self.object_name, "Association"])
         association = SubnetRouteTableAssociation(association_name, subnet_id=self._subnet,
                                                   route_table_id=self)
         return [association]
@@ -387,7 +387,7 @@ class SecurityGroupEgress(Resource):
                 prop('GroupId')]
 
 class SecurityGroupIngress(Resource):
-    resource_type = 'AWS::EC2::SecurityGroupIgress'
+    resource_type = 'AWS::EC2::SecurityGroupIngress'
 
     @staticmethod
     def props():
@@ -493,7 +493,7 @@ class VPC(Resource):
     def _dhcp_options_association(self):
         if not hasattr(self, 'dhcp_options'):
             return []
-        association_name = ''.join([self.name, self._dhcp_options.name, "Association"])
+        association_name = ''.join([self.object_name, self._dhcp_options.object_name, "Association"])
         association = VPCDHCPOptionsAssociation(association_name, vpc_id=self,
                                                 dhcp_options_id=self._dhcp_options)
         return [association]

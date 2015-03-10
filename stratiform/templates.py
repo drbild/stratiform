@@ -65,7 +65,7 @@ class Template(AWSObject):
     def __add(self, *items):
         for item in items:
             coll = self.__collection_for(item)
-            coll[item.name] = item
+            coll[item.object_name] = item
             self.__add(*item.siblings())
 
     def __collection_for(self, item):
@@ -91,12 +91,12 @@ class Template(AWSObject):
         return result
 
     def _resource(self, resource, name=None):
-        name = name or resource.name
+        name = name or resource.object_name
         self._ensure_present('resources')
         self.resources[name] = resource
 
     def output(self, output, name=None):
-        name = name or output.name
+        name = name or output.object_name
         result = copy.copy(self)
         result._ensure_present('outputs')
         result.outputs[name] = output

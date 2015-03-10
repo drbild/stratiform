@@ -21,7 +21,7 @@ from stratiform.utils import class_name, snake_case, super_copy
 from stratiform.dispatchers import typed_dispatch
 
 def named_as_ref(obj):
-    if isinstance(obj, NameableAWSObject) and hasattr(obj, 'name'):
+    if isinstance(obj, NameableAWSObject) and hasattr(obj, 'object_name'):
         return Ref(obj)
     else:
         return obj
@@ -122,36 +122,36 @@ class NameableAWSObject(AWSObject):
 
     """
     def __init__(self, *args, **kwargs):
-        name, args = NameableAWSObject.__parse_args(args)
+        object_name, args = NameableAWSObject.__parse_args(args)
         super(NameableAWSObject, self).__init__(*args, **kwargs)
-        if name:
-            self.name = name
+        if object_name:
+            self.object_name = object_name
 
     def __call__(self, *args, **kwargs):
-        name, args = NameableAWSObject.__parse_args(args)
+        object_name, args = NameableAWSObject.__parse_args(args)
         result = super(NameableAWSObject, self).__init__(*args, **kwargs)
-        if name:
-            result.name = name
+        if object_name:
+            result.object_name = object_name
         return result
     
     @staticmethod
     def __parse_args(args):
-        name = None
+        object_name = None
         if len(args) >= 1 and isinstance(args[0], basestring):
-            name, args = args[0], args[1:]
-        return name, args
+            object_name, args = args[0], args[1:]
+        return object_name, args
 
     def __attrs__(self):
         sattrs = super(NameableAWSObject, self).__attrs__()
-        return ['name'] + sattrs
+        return ['object_name'] + sattrs
 
 class Ref(AWSObject):
     @staticmethod
     def props():
-        return [Property('Ref', NameableAWSObject, func='name')]
+        return [Property('Ref', NameableAWSObject, func='object_name')]
 
     def __json__(self):
-        return {'Ref' : self.ref.name}
+        return {'Ref' : self.ref.object_name}
 
 #### Public API ####
 ref  = Ref

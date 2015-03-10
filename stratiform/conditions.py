@@ -16,20 +16,20 @@ from stratiform.dispatchers import typed_dispatch
 from stratiform.functions import ConditionFn
 
 def named_as_cond(obj):
-    if isinstance(obj, Condition) and hasattr(obj, 'name'):
-        return {'Condition' : obj.name}
+    if isinstance(obj, Condition) and hasattr(obj, 'object_name'):
+        return {'Condition' : obj.object_name}
     else:
         return obj
 
 class Condition(object):
     @typed_dispatch
-    def __init__(self, name, func):
-        self.name = name
+    def __init__(self, object_name, func):
+        self.object_name = object_name
         self.func = func
 
     @staticmethod
     def arg_names():
-        return ('name', 'func')
+        return ('object_name', 'func')
 
     @staticmethod
     def arg_types():
@@ -59,7 +59,7 @@ class Conditionable(object):
 
     def __json__(self):
         if hasattr(self, 'condition'):
-            return {'Condition' : self.condition.name}
+            return {'Condition' : self.condition.object_name}
         else:
             return {}
 

@@ -16,6 +16,7 @@
 __version_info__ = ('0', '1', '0-SNAPSHOT')
 __version__ = '.'.join(__version_info__)
 
+from stratiform.base import ref
 from stratiform.common import *
 
 from stratiform.templates import *

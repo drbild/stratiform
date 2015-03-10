@@ -51,7 +51,7 @@ class ListWrapper(Wrapper):
     def __init__(self, *args):
         wrapped = []
         if len(args) == 1 and isinstance(args[0], list):
-            wrapped += args
+            wrapped += args[0]
         else:
             wrapped = args
         super(ListWrapper, self).__init__(wrapped)

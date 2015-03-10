@@ -15,7 +15,7 @@
 from copy import copy
 
 from stratiform.base import AWSObject, prop
-from stratiform.common import AvailabilityZone, CIDR, DomainName, PortRange, IpProtocol
+from stratiform.common import AvailabilityZone, CIDR, DomainName, PortRange, IpAddress, IpProtocol
 from stratiform.utils import Wrapper, ListWrapper, snake_case, super_copy
 
 from stratiform.resources import Resource, Tags
@@ -29,6 +29,9 @@ AclAction.deny  = AclAction('deny')
 class DomainNameServers(ListWrapper):
     pass
 DomainNameServers.aws_provided_dns = DomainNameServers(['AwsProvidedDns'])
+
+class ImageId(Wrapper):
+    pass
 
 ################################ AWS Property Types ################################
 class ICMPProperty(AWSObject):
@@ -151,7 +154,7 @@ class Instance(Resource):
 
     @staticmethod
     def props():
-        return [prop('AvailabilityZone', AvailiabilityZone),
+        return [prop('AvailabilityZone', AvailabilityZone),
                 prop('BlockDeviceMappings'),
                 prop('DisableApiTermination'),
                 prop('EbsOptimized'),
@@ -358,14 +361,6 @@ class SecurityGroup(Resource):
                 prop('SecurityGroupEgress', default=[]),
                 prop('SecurityGroupIngress', default=[]),
                 prop('Tags', Tags)]
-
-    def __init__(self, *args, **kwargs):
-        super(SecurityGroup, self).__init__(*args, **kwargs)
-
-        result = copy(self)
-        kwargs['network_acl_id'] = self
-        result._siblings.append(network_acl_entry(*args, **kwargs))
-        return result
 
     def egress(self, *args, **kwargs):
         result = copy(self)
@@ -576,6 +571,7 @@ allow               = AclAction.allow
 deny                = AclAction.deny
 domain_name_servers = DomainNameServers
 aws_provided_dns    = DomainNameServers.aws_provided_dns
+image_id            = ImageId
 
 icmp_property                              = ICMPProperty
 mount_point                                = MountPoint

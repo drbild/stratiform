@@ -364,15 +364,46 @@ class SecurityGroup(Resource):
 
     def egress(self, *args, **kwargs):
         result = copy(self)
+        args = self.prefix_name_arg("Outbound", args)
+        args, kwargs = SecurityGroup.name_sg_arg('destination_security_group_id', args, kwargs)
         kwargs['group_id'] = self
         result._siblings.append(security_group_egress(*args, **kwargs))
         return result
 
     def ingress(self, *args, **kwargs):
         result = copy(self)
+        args = self.prefix_name_arg("Inbound", args)
+        args, kwargs = SecurityGroup.name_sg_arg('source_security_group_id', args, kwargs)
         kwargs['group_id'] = self
         result._siblings.append(security_group_ingress(*args, **kwargs))
         return result
+
+    def prefix_name_arg(self, kind, args):
+        '''Adds a prefix consisting of the group name and the direction to the
+        name argument.
+
+        '''
+        if len(args) < 1 or not isinstance(args[0], basestring):
+            return args
+        args = list(args)
+        args[0] = self.object_name + kind.title() + args[0]
+        return args
+
+    @staticmethod
+    def name_sg_arg(kw, args, kwargs):
+        '''Replaces a positional argument of type SecurityGroup by keyword
+        arguments of the specified name.
+
+        '''
+        sg = None
+        for arg in args:
+            if isinstance(arg, SecurityGroup):
+                sg = arg
+                break
+        if sg:
+            kwargs[kw] = sg
+            args.remove(sg)
+        return args, kwargs
 
 class SecurityGroupEgress(Resource):
     resource_type = 'AWS::EC2::SecurityGroupEgress'

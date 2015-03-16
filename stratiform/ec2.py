@@ -463,13 +463,13 @@ class Volume(Resource):
 
     @staticmethod
     def props():
-        [prop('AvailabilityZone', AvailabilityZone),
-         prop('Encrypted'),
-         prop('Iops'),
-         prop('Size'),
-         prop('SnapshotId'),
-         prop('Tags', Tags),
-         prop('VolumeType')]
+        return [prop('AvailabilityZone', AvailabilityZone),
+                prop('Encrypted'),
+                prop('Iops'),
+                prop('Size'),
+                prop('SnapshotId'),
+                prop('Tags', Tags),
+                prop('VolumeType')]
 
 class VolumeAttachment(Resource):
     resource_type = 'AWS::EC2::VolumeAttachment'

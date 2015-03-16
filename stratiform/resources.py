@@ -17,7 +17,7 @@ from collections import OrderedDict as odict
 
 from stratiform.base import AWSObject, NameableAWSObject, prop
 from stratiform.conditions import Condition, Conditionable
-from stratiform.utils import class_name, super_copy
+from stratiform.utils import class_name, super_copy, Wrapper
 
 def merge(*seqs):
     return [item for seq in seqs for item in seq]
@@ -26,12 +26,26 @@ class Resource(Conditionable, NameableAWSObject):
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
 
+    def __attrs__(self):
+        sattrs = super(Resource, self).__attrs__()
+        return sattrs + ['deletion_policy']
+
+    def arg_names(self):
+        snames = super(Resource, self).arg_names()
+        return snames + ['deletion_policy']
+
+    def arg_types(self):
+        stypes = super(Resource, self).arg_types()
+        return stypes + [DeletionPolicy]
+
     def __json__(self):
         data = odict([
             ('Type', self.resource_type),
             ('Properties', NameableAWSObject.__json__(self))
         ])
         data.update(Conditionable.__json__(self))
+        if hasattr(self, 'deletion_policy'):
+            data['DeletionPolicy'] = self.deletion_policy
         return data
 
 class Tag(AWSObject):
@@ -58,7 +72,14 @@ class Tags(object):
     def __json__(self):
         return self.tags
 
+class DeletionPolicy(Wrapper):
+    pass
+DeletionPolicy.DELETE   = DeletionPolicy("Delete")
+DeletionPolicy.RETAIN   = DeletionPolicy("Retain")
+DeletionPolicy.SNAPSHOT = DeletionPolicy("Snapshot")
+
 #### Public API ####
 tag = tags = Tags
+deletion_policy = DeletionPolicy
 
-__all__ = ['tag', 'tags']
+__all__ = ['tag', 'tags', 'deletion_policy']

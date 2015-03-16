@@ -129,7 +129,7 @@ class NameableAWSObject(AWSObject):
 
     def __call__(self, *args, **kwargs):
         object_name, args = NameableAWSObject.__parse_args(args)
-        result = super(NameableAWSObject, self).__init__(*args, **kwargs)
+        result = super(NameableAWSObject, self).__call__(*args, **kwargs)
         if object_name:
             result.object_name = object_name
         return result

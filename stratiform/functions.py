@@ -144,10 +144,7 @@ class If(ConditionFn):
         self.false_value = false_value
 
     def __json__(self):
-        if hasattr(condition, 'name'):
-            name = condition.name
-        else:
-            name = name
+        name = self.condition.object_name
         params = [name,
                   named_as_ref(self.true_value),
                   named_as_ref(self.false_value)]
@@ -162,7 +159,7 @@ class Not(ConditionFn):
         self.condition = condition
 
     def __json__(self):
-        return {'Fn::Not' : nacor(self.condition)}
+        return {'Fn::Not' : [nacor(self.condition)]}
 
 class Or(ConditionFn):
     """Returns true if any one of the specified conditions evalutes to

@@ -29,7 +29,7 @@ class Parameter(NameableAWSObject):
     Type.Subnet             = Type('AWS::EC2::Subnet::Id')
     Type.Vpc                = Type('AWS::EC2::VPC::Id')
     Type.ListSecurityGroup  = Type('List<AWS::EC2::SecurityGroup::Id>')
-    Type.ListSubnet         = Type('LIst<AWS::EC2::Subnet::Id>')
+    Type.ListSubnet         = Type('List<AWS::EC2::Subnet::Id>')
     Type.ListVpc            = Type('List<AWS::EC2::VPC::Id>')
 
     @staticmethod

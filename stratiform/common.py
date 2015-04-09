@@ -60,20 +60,21 @@ PortRange.ephemeral       = PortRange("1024-65535")
 PortRange.ephemeral_elb   = PortRange("1024-65535")
 PortRange.ephemeral_linux = PortRange("32768-61000")
 
-PortRange.ssh   = PortRange(22)
-PortRange.smtp  = PortRange(25)
-PortRange.dns   = PortRange(53)
-PortRange.http  = PortRange(80)
-PortRange.pop3  = PortRange(110)
-PortRange.imap  = PortRange(143)
-PortRange.ldap  = PortRange(389)
-PortRange.https = PortRange(443)
-PortRange.smtps = PortRange(465)
-PortRange.imaps = PortRange(993)
-PortRange.pop3s = PortRange(995)
-PortRange.mssql = PortRange(1433)
-PortRange.mysql = PortRange(3306)
-PortRange.rdp   = PortRange(3389)
+PortRange.ssh        = PortRange(22)
+PortRange.smtp       = PortRange(25)
+PortRange.dns        = PortRange(53)
+PortRange.http       = PortRange(80)
+PortRange.pop3       = PortRange(110)
+PortRange.imap       = PortRange(143)
+PortRange.ldap       = PortRange(389)
+PortRange.https      = PortRange(443)
+PortRange.smtps      = PortRange(465)
+PortRange.imaps      = PortRange(993)
+PortRange.pop3s      = PortRange(995)
+PortRange.mssql      = PortRange(1433)
+PortRange.mysql      = PortRange(3306)
+PortRange.rdp        = PortRange(3389)
+PortRange.postgresql = PortRange(5432)
 
 #### Public API ####
 az              = availability_zone = AvailabilityZone
@@ -105,15 +106,16 @@ pop3s           = PortRange.pop3s
 mssql           = PortRange.mssql
 mysql           = PortRange.mysql
 rdp             = PortRange.rdp
+postgresql      = PortRange.postgresql
 
 protocol        = IpProtocol
 icmp            = IpProtocol.icmp
 tcp             = IpProtocol.tcp
 udp             = IpProtocol.udp
 
-__all__ = ['az', 'availability_zone', 'address', 'ip_localhost',
-           'cidr', 'cidr_all', 'domain_name', 'port', 'ports',
-           'port_range', 'ports_all', 'ephemeral', 'ephemeral_elb',
-           'ephemeral_linux', 'ssh', 'smtp', 'dns', 'http', 'pop3',
-           'imap', 'ldap', 'https', 'smtps', 'pop3s', 'mssql',
-           'mysql', 'rdp', 'protocol', 'icmp', 'tcp', 'udp']
+__all__ = ['az', 'availability_zone', 'address', 'ip_localhost', 'cidr',
+           'cidr_all', 'domain_name', 'port', 'ports', 'port_range',
+           'ports_all', 'ephemeral', 'ephemeral_elb', 'ephemeral_linux',
+           'ssh', 'smtp', 'dns', 'http', 'pop3', 'imap', 'ldap', 'https', 'smtps',
+           'pop3s', 'mssql', 'mysql', 'rdp', 'postgresql', 'protocol', 'icmp',
+           'tcp', 'udp']

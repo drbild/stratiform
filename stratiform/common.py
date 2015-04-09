@@ -29,6 +29,7 @@ class DomainName(Wrapper):
 
 class IpProtocol(Wrapper):
     pass
+IpProtocol.all  = IpProtocol(-1)
 IpProtocol.icmp = IpProtocol(1)
 IpProtocol.tcp  = IpProtocol(6)
 IpProtocol.udp  = IpProtocol(17)
@@ -109,6 +110,7 @@ rdp             = PortRange.rdp
 postgresql      = PortRange.postgresql
 
 protocol        = IpProtocol
+protocol_all    = IpProtocol.all
 icmp            = IpProtocol.icmp
 tcp             = IpProtocol.tcp
 udp             = IpProtocol.udp
@@ -117,5 +119,5 @@ __all__ = ['az', 'availability_zone', 'address', 'ip_localhost', 'cidr',
            'cidr_all', 'domain_name', 'port', 'ports', 'port_range',
            'ports_all', 'ephemeral', 'ephemeral_elb', 'ephemeral_linux',
            'ssh', 'smtp', 'dns', 'http', 'pop3', 'imap', 'ldap', 'https', 'smtps',
-           'pop3s', 'mssql', 'mysql', 'rdp', 'postgresql', 'protocol', 'icmp',
-           'tcp', 'udp']
+           'pop3s', 'mssql', 'mysql', 'rdp', 'postgresql', 'protocol', 'protocol_all',
+           'icmp', 'tcp', 'udp']

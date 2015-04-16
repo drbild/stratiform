@@ -236,10 +236,12 @@ class NetworkAcl(Resource):
 
     def allow_ingress(self, *args, **kwargs):
         kwargs['rule_action'] = AclAction.allow
+        args = self.prefix_name_arg("Allow", "Ingress", args)
         return self.ingress(*args, **kwargs)
 
     def deny_ingress(self, *args, **kwargs):
         kwargs['rule_action'] = AclAction.deny
+        args = self.prefix_name_arg("Deny", "Ingress", args)
         return self.ingress(*args, **kwargs)
 
     def egress(self, *args, **kwargs):
@@ -248,11 +250,24 @@ class NetworkAcl(Resource):
 
     def allow_egress(self, *args, **kwargs):
         kwargs['rule_action'] = AclAction.allow
+        args = self.prefix_name_arg("Allow", "Egress", args)
         return self.egress(*args, **kwargs)
 
     def deny_egress(self, *args, **kwargs):
         kwargs['rule_action'] = AclAction.deny
+        args = self.prefix_name_arg("Deny", "Egress", args)
         return self.egress(*args, **kwargs)
+
+    def prefix_name_arg(self, action, kind, args):
+        '''Adds a prefix consisting of the ACL name, the action, and the
+        direction to the name argument.
+
+        '''
+        if len(args) < 1 or not isinstance(args[0], basestring):
+            return args
+        args = list(args)
+        args[0] = self.object_name + action.title() + kind.title() + args[0]
+        return args
 
 class NetworkAclEntry(Resource):
     resource_type = 'AWS::EC2::NetworkAclEntry'

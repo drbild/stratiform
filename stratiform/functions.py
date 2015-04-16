@@ -59,7 +59,7 @@ class GetAtt(Fn):
         self.attribute = attribute
 
     def __json__(self):
-        params = [self.resource, named_as_ref(self.attribute)]
+        params = [self.resource.object_name, named_as_ref(self.attribute)]
         return {'Fn::GetAtt' : params}
 
 class GetAZs(Fn):

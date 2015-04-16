@@ -40,7 +40,7 @@ class Template(AWSObject):
                 prop('Outputs',    odict)]
 
     __collections = ['parameters', 'mappings', 'conditions',
-                    'resources', 'outputs']
+                     'resources', 'outputs']
 
     def __init__(self, *args, **kwargs):
         for attr in Template.__collections:
@@ -57,10 +57,16 @@ class Template(AWSObject):
     def __str__(self):
         return self.to_json()
 
+    def __setattr__(self, k, v):
+        try:
+            v = v(k)
+            self.add(v)
+        except TypeError as e:
+            pass
+        super(Template, self).__setattr__(k, v)
+
     def add(self, *items):
-        result = copy.copy(self)
-        result.__add(*items)
-        return result
+        self.__add(*items)
 
     def __add(self, *items):
         for item in items:
@@ -84,11 +90,9 @@ class Template(AWSObject):
             raise TypeError(msg%type(item))
 
     def resource(self, resource, name=None):
-        result = copy.copy(self)
-        result._resource(resource, name)
+        self._resource(resource, name)
         for resource in siblings(resource):
-            result._resource(resource)
-        return result
+            self._resource(resource)
 
     def _resource(self, resource, name=None):
         name = name or resource.object_name
@@ -97,10 +101,8 @@ class Template(AWSObject):
 
     def output(self, output, name=None):
         name = name or output.object_name
-        result = copy.copy(self)
-        result._ensure_present('outputs')
-        result.outputs[name] = output
-        return result
+        self._ensure_present('outputs')
+        self.outputs[name] = output
 
     def to_json(self, indent=2):
         return json.dumps(self, cls=JSONEncoder, indent=indent, separators=(',', ': '))

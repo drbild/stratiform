@@ -66,6 +66,7 @@ PortRange.smtp       = PortRange(25)
 PortRange.dns        = PortRange(53)
 PortRange.http       = PortRange(80)
 PortRange.pop3       = PortRange(110)
+PortRange.ntp        = PortRange(123)
 PortRange.imap       = PortRange(143)
 PortRange.ldap       = PortRange(389)
 PortRange.https      = PortRange(443)
@@ -97,7 +98,8 @@ ssh             = PortRange.ssh
 smtp            = PortRange.smtp 
 dns             = PortRange.dns   
 http            = PortRange.http 
-pop3            = PortRange.pop3 
+pop3            = PortRange.pop3
+ntp             = PortRange.ntp
 imap            = PortRange.imap 
 ldap            = PortRange.ldap 
 https           = PortRange.https
@@ -118,6 +120,6 @@ udp             = IpProtocol.udp
 __all__ = ['az', 'availability_zone', 'address', 'ip_localhost', 'cidr',
            'cidr_all', 'domain_name', 'port', 'ports', 'port_range',
            'ports_all', 'ephemeral', 'ephemeral_elb', 'ephemeral_linux',
-           'ssh', 'smtp', 'dns', 'http', 'pop3', 'imap', 'ldap', 'https', 'smtps',
+           'ssh', 'smtp', 'dns', 'http', 'pop3', 'ntp', 'imap', 'ldap', 'https', 'smtps',
            'pop3s', 'mssql', 'mysql', 'rdp', 'postgresql', 'protocol', 'protocol_all',
            'icmp', 'tcp', 'udp']

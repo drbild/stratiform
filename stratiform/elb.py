@@ -20,21 +20,87 @@ from stratiform.utils import snake_case
 
 from stratiform.resources import Resource, Tags
 
+################################ AWS Property Types ################################
+class Attribute(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('Name', basestring),
+                prop('Value', basestring)]
+
+class AccessLoggingPolicy(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('EmitInterval', int),
+                prop('Enabled', bool),
+                prop('S3BucketName', basestring),
+                prop('S3BucketPrefix', basestring)]
+
+class AppCookieStickinessPolicy(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('CookieName', basestring),
+                prop('PolicyName', basestring)]
+
+class ConnectionDrainingPolicy(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('Enabled', boolean),
+                prop('Timeout', int)]
+
+class ConnectionSettings(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('IdleTimeout', int)]
+
+class HealthCheck(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('HealthyThreshold', basestring),
+                prop('Interval', basestring),
+                prop('Target', basestring),
+                prop('Timeout', basestring),
+                prop('UnhealthyThreshold', basestring)]
+
+class LBCookieStickinessPolicy(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('CookieExpirationPeriod', basestring),
+                prop('PolicyName', basestring)]
+
+class Listener(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('InstancePort', basestring),
+                prop('InstanceProtocol', basestring),
+                prop('LoadBalancerPort', basestring),
+                prop('PolicyNames', basestring),
+                prop('Protocol', basestring),
+                prop('SSLCertificateId', basestring)]
+
+class Policy(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('Attributes'),
+                prop('InstancePorts'),
+                prop('LoadBalancerPorts'),
+                prop('PolicyName', basestring),
+                prop('PolicyType', basestring)]
+
 ################################ AWS Resource Types ################################
 class LoadBalancer(Resource):
     resource_type = 'AWS::ElasticLoadBalancing::LoadBalancer'
     
     @staticmethod
     def props():
-        return [prop('AccessLoggingPolicy'),
-                prop('AppCookieStickinessPolicy'),
+        return [prop('AccessLoggingPolicy', AccessLoggingPolicy),
+                prop('AppCookieStickinessPolicy', AppCookieStickinessPolicy),
                 prop('AvailabilityZone', AvailabilityZone),
-                prop('ConnectionDrainingPolicy'),
-                prop('ConnectionSettings'),
+                prop('ConnectionDrainingPolicy', ConnectionDrainingPolicy),
+                prop('ConnectionSettings', ConnectionSettings),
                 prop('CrossZone'),
-                prop('HealthCheck'),
+                prop('HealthCheck', HealthCheck),
                 prop('Instances'),
-                prop('LBCookieStickinessPolicy'),
+                prop('LBCookieStickinessPolicy', LBCookieStickinessPolicy),
                 prop('LoadBalancerName'),
                 prop('Listeners'),
                 prop('Policies'),
@@ -50,4 +116,7 @@ def __is_resource(obj):
 constructors = {snake_case(name): obj for (name, obj) in globals().items() if __is_resource(obj)}
 globals().update(constructors)
 
-__all__ = sorted(constructors.keys())
+def ssl_attribute(name):
+    return Attribute(name=name, value='true')
+
+__all__ = sorted([ssl_attribute] + constructors.keys())

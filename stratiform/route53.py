@@ -14,8 +14,8 @@
 
 from stratiform.base import AWSObject, prop
 from stratiform.common import DomainName, IpAddress
-from stratiform.utils import Wrapper, snake_case
-from stratiform.resources import Resource
+from stratiform.utils import ListWrapper, Wrapper, snake_case
+from stratiform.resources import Resource, Tags
 
 ################################ Custom Types ################################
 class ContinentCode(Wrapper):
@@ -25,6 +25,9 @@ class CountryCode(Wrapper):
     pass
 
 class SubdivisionCode(Wrapper):
+    pass
+
+class HostedZoneVPCs(ListWrapper):
     pass
 
 ################################ AWS Property Types ################################
@@ -42,7 +45,7 @@ class RecordSetGeoLocation(AWSObject):
                 prop('CountryCode', CountryCode),
                 prop('SubdivisionCode', SubdivisionCode)]
 
-class HealthCheckConfiguration(AWSObject):
+class HealthCheckConfig(AWSObject):
     @staticmethod
     def props():
         return [prop('FailureThreshold'),
@@ -54,10 +57,16 @@ class HealthCheckConfiguration(AWSObject):
                 prop('SearchString'),
                 prop('Type')]
 
-class HostedZoneConfiguration(AWSObject):
+class HostedZoneConfig(AWSObject):
     @staticmethod
     def props():
         return [prop('Comment')]
+
+class HostedZoneVPC(AWSObject):
+    @staticmethod
+    def props():
+        return [prop('VPCId', basestring),
+                prop('VPCRegion', basestring)]
 
 ################################ AWS Resource Types ################################
 class HealthCheck(Resource):
@@ -65,15 +74,17 @@ class HealthCheck(Resource):
 
     @staticmethod
     def props():
-        return [prop('HealthCheckConfig', HealthCheckConfiguration)]
+        return [prop('HealthCheckConfig', HealthCheckConfig)]
 
 class HostedZone(Resource):
     resource_type = 'AWS::Route53::HostedZone'
 
     @staticmethod
     def props():
-        return [prop('HostedZoneConfig', HostedZoneConfiguration),
-                prop('Name', DomainName)]
+        return [prop('Name', DomainName),
+                prop('VPCs', HostedZoneVPCs, attr='vpcs'),
+                prop('HostedZoneConfig', HostedZoneConfig),
+                prop('HostedZoneTags', Tags)]
 
 class RecordSet(Resource):
     resource_type = 'AWS::Route53::RecordSet'
@@ -116,14 +127,17 @@ continent_code   = ContinentCode
 country_code     = CountryCode
 subdivision_code = SubdivisionCode
 
+hosted_zone_vpc  = HostedZoneVPC
+hosted_zone_vpcs = HostedZoneVPCs
+
 alias_target = AliasTarget
 record_set_geo_location = RecordSetGeoLocation
-health_check_configuration = HealthCheckConfiguration
-hosted_zone_configuration = HostedZoneConfiguration
+health_check_config = HealthCheckConfig
+hosted_zone_config = HostedZoneConfig
 
 __all__ = sorted(['continent_code', 'country_code',
                   'subdivision_code', 'alias_target',
                   'record_set_geo_location',
-                  'health_check_configuration',
-                  'hosted_zone_configuration'] + \
+                  'health_check_config',
+                  'hosted_zone_config'] + \
                  constructors.keys())

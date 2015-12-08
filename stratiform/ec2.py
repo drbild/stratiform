@@ -493,7 +493,7 @@ class VolumeAttachment(Resource):
     def props():
         return [prop('Device'),
                 prop('InstanceId', Instance),
-                prop('VolumeId', Volumne)]
+                prop('VolumeId', Volume)]
 
 class VPC(Resource):
     resource_type = 'AWS::EC2::VPC'

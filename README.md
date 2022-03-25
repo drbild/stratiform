@@ -1,7 +1,13 @@
 # stratiform
 
+[DEPRECATED] This library deprecated. Use something Hashicorp
+Terraform instead (although the limited expressiveness of declarative
+HCL is a significant step backwards).
+
 Stratiform is a Python library for concisely creating AWS
-CloudFormation JSON templates.
+CloudFormation JSON templates.  Python's expressiveness leads to
+simpler and easier-to-read templates than a purley declarative
+approach like JSON.
 
 
 ## Install

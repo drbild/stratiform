@@ -15,6 +15,10 @@ approach like JSON.
 ```pip install stratiform```
 
 
+## Example
+
+For an example VPC configuration, see the `example/` directory.
+
 ## Authors
 **David R. Bild**
 

@@ -1,6 +1,6 @@
 # stratiform
 
-[DEPRECATED] This library deprecated. Use something Hashicorp
+[DEPRECATED] This library is deprecated. Use something Hashicorp
 Terraform instead (although the limited expressiveness of declarative
 HCL is a significant step backwards).
 
